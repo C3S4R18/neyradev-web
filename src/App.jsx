@@ -41,6 +41,9 @@ const SERVICES_DATA = [
   }
 ];
 
+// FILTROS: Aseguramos que los strings coincidan EXACTAMENTE con la propiedad `category` de cada proyecto
+const FILTERS = ["Todos", "Empresarial", "Full Stack", "Web", "Móvil"];
+
 const PROJECTS_DATA = [
   {
     id: 0,
@@ -148,6 +151,155 @@ const PROJECTS_DATA = [
     techStackIcons: [<SiKotlin/>, <FaAndroid/>, <FaDatabase/>],
     gradient: "from-purple-900 to-indigo-900",
     icon: <FaMobileAlt className="text-6xl text-white relative z-10 drop-shadow-lg" />
+  },
+  {
+    id: 4,
+    title: "CinnamoDiary",
+    subtitle: "App Móvil de Diario Personal",
+    category: "Móvil",
+    badge: "PROYECTO PERSONAL",
+    link: "#",
+    gallery: [
+      "/img-proyectos/cinnamo-1.png",
+      "/img-proyectos/cinnamo-2.jpeg",
+      "/img-proyectos/cinnamo-3.jpeg",
+      "/img-proyectos/cinnamo-4.jpeg",
+      "/img-proyectos/cinnamo-5.jpeg",
+      "/img-proyectos/cinnamo-6.jpeg",
+      "/img-proyectos/cinnamo-7.jpeg",
+      "/img-proyectos/cinnamo-8.jpeg"
+    ],
+    business: {
+      problem: "Falta de una plataforma privada y estéticamente atractiva para el registro emocional y recuerdos diarios.",
+      solution: "Aplicación móvil altamente estética e intuitiva con herramientas de seguimiento de estado de ánimo.",
+      impact: "Mejora en el hábito de escritura de los usuarios gracias a una interfaz amigable y relajante."
+    },
+    tech: {
+      architecture: "Clean Architecture MVVM enfocado en UI/UX interactivo.",
+      stack: ["Kotlin", "Supabase", "Material You", "Coroutines"],
+      challenges: "Implementación de temas dinámicos y animaciones fluidas manteniendo el alto rendimiento.",
+      highlight: "Diseño 100% personalizado con persistencia de datos local ultra rápida."
+    },
+    techStackIcons: [<SiKotlin/>, <FaAndroid/>, <FaDatabase/>],
+    gradient: "from-pink-900 to-purple-900",
+    icon: <FaMobileAlt className="text-6xl text-white relative z-10 drop-shadow-lg" />
+  },
+  {
+    id: 5,
+    title: "Letrero LED Pro",
+    subtitle: "Señalización Digital Móvil",
+    category: "Móvil",
+    link: "#",
+    gallery: [
+      "/img-proyectos/led-1.png",
+      "/img-proyectos/led-2.jpeg",
+      "/img-proyectos/led-3.jpeg",
+      "/img-proyectos/led-4.jpeg"
+    ],
+    business: {
+      problem: "Los usuarios requerían una forma rápida de transmitir mensajes a distancia en entornos ruidosos o eventos masivos.",
+      solution: "Aplicación que convierte la pantalla de cualquier dispositivo en un letrero LED programable y dinámico.",
+      impact: "Facilita la comunicación visual instantánea en conciertos, aeropuertos y vitrinas comerciales."
+    },
+    tech: {
+      architecture: "Arquitectura nativa enfocada en rendimiento de renderizado gráfico.",
+      stack: ["Kotlin", "Canvas API", "Android Studio", "Custom Views"],
+      challenges: "Mantener 60fps constantes mientras se dibujan y mueven cientos de píxeles LED simulados en pantalla.",
+      highlight: "Uso avanzado del Canvas de Android para animaciones de texto fluidas."
+    },
+    techStackIcons: [<SiKotlin/>, <FaAndroid/>, <FaLaptopCode/>],
+    gradient: "from-red-900 to-yellow-900",
+    icon: <FaBolt className="text-6xl text-white relative z-10 drop-shadow-lg" />
+  },
+  {
+    id: 6,
+    title: "SpinLoryx",
+    subtitle: "Gamificación & Entretenimiento",
+    category: "Móvil",
+    link: "#",
+    gallery: [
+      "/img-proyectos/spin-1.png",
+      "/img-proyectos/spin-2.jpeg",
+      "/img-proyectos/spin-3.jpeg",
+      "/img-proyectos/spin-4.jpeg",
+      "/img-proyectos/spin-5.jpeg"
+    ],
+    business: {
+      problem: "Necesidad de una herramienta digital, interactiva y personalizable para la toma de decisiones al azar.",
+      solution: "Aplicación de ruletas personalizables con mecánicas de juego realistas, ideal para sorteos y dinámicas grupales.",
+      impact: "Aumento en la retención de usuarios debido a la excelente respuesta táctil y diversión visual."
+    },
+    tech: {
+      architecture: "Arquitectura orientada a eventos para el control físico de animaciones.",
+      stack: ["Kotlin", "Android Animation Framework", "UX/UI Design"],
+      challenges: "Calcular matemáticamente la fricción, peso y desaceleración para asegurar que la ruleta sea 100% aleatoria.",
+      highlight: "Integración de físicas realistas y feedback háptico inmersivo."
+    },
+    techStackIcons: [<SiKotlin/>, <FaAndroid/>, <FaGamepad/>],
+    gradient: "from-blue-900 to-purple-900",
+    icon: <FaStar className="text-6xl text-white relative z-10 drop-shadow-lg" />
+  },
+  {
+    id: 7,
+    title: "Ruag Asistencias",
+    subtitle: "Control de Personal Web y App",
+    category: "Full Stack",
+    badge: "SISTEMA CORPORATIVO",
+    link: "https://ruag-app-web.vercel.app/",
+    gallery: [
+      "/img-proyectos/ruag-asis-1.png",
+      "/img-proyectos/ruag-asis-2.jpeg",
+      "/img-proyectos/ruag-asis-3.jpeg",
+      "/img-proyectos/ruag-asis-4.jpeg",
+      "/img-proyectos/ruag-asis-5.jpeg"
+    ],
+    business: {
+      problem: "El registro de horas del personal en campo era vulnerable a manipulaciones y desajustes al no validar ubicación real.",
+      solution: "Sistema de control de asistencia dual: App móvil con validación GPS y un panel Web para Recursos Humanos.",
+      impact: "Automatización total de la nómina y eliminación del fraude en las marcaciones."
+    },
+    tech: {
+      architecture: "Arquitectura Cliente-Servidor Híbrida con Sincronización Real-Time.",
+      stack: ["Next.js", "TypeScript", "Kotlin", "GPS API", "Supabase"],
+      challenges: "Permitir marcaciones en zonas sin internet (Offline-first) y sincronizar automáticamente al recuperar la señal.",
+      highlight: "Geofencing avanzado para validar que el trabajador esté dentro del área permitida."
+    },
+    techStackIcons: [<SiNextdotjs/>, <SiKotlin/>, <FaAndroid/>, <SiSupabase/>],
+    gradient: "from-teal-900 to-green-900",
+    icon: <FaCheckCircle className="text-6xl text-white relative z-10 drop-shadow-lg" />
+  },
+  {
+    id: 8,
+    title: "RUAG CV",
+    subtitle: "Plataforma de CVs con IA",
+    category: "Full Stack",
+    badge: "INNOVACIÓN IA",
+    link: "#",
+    gallery: [
+      "/img-proyectos/cv-ia-1.png",
+      "/img-proyectos/cv-ia-2.png",
+      "/img-proyectos/cv-ia-3.png",
+      "/img-proyectos/cv-ia-4.png",
+      "/img-proyectos/cv-ia-5.png",
+      "/img-proyectos/cv-ia-6.jpeg",
+      "/img-proyectos/cv-ia-7.jpeg",
+      "/img-proyectos/cv-ia-8.jpeg",
+      "/img-proyectos/cv-ia-9.jpeg"
+    ],
+    business: {
+      problem: "El departamento de RRHH recibía currículums con formatos desordenados e información inconsistente, dificultando la selección de personal.",
+      solution: "Una plataforma impulsada por Inteligencia Artificial que extrae la información de cualquier CV antiguo y la estandariza en un diseño corporativo unificado.",
+      impact: "Reducción drástica del tiempo de filtrado de candidatos y estandarización visual al 100% para el equipo de reclutamiento."
+    },
+    tech: {
+      architecture: "Arquitectura Serverless Full Stack integrada con Modelos de Lenguaje (LLM).",
+      stack: ["Next.js", "OpenAI API", "Kotlin", "Tailwind CSS"],
+      challenges: "Procesar prompts complejos en el backend para extraer datos estructurados (JSON) a partir de PDFs no estructurados.",
+      highlight: "Generación de plantillas PDF dinámicas en el cliente y sugerencias predictivas de IA."
+    },
+    techStackIcons: [<FaRobot/>, <SiNextdotjs/>, <SiKotlin/>, <FaAndroid/>],
+    gradient: "from-indigo-900 to-blue-900",
+    icon: <FaRobot className="text-6xl text-white relative z-10 drop-shadow-lg" />
   }
 ];
 
@@ -318,7 +470,7 @@ const CVInstallerModal = ({ onClose }) => {
   }, [theme]);
 
   useEffect(() => {
-    if (progress === 100) {
+    if (progress >= 100) {
       setLogs(prev => [...prev, "¡DESCARGA COMPLETADA!"]);
       setTimeout(() => {
         const link = document.createElement('a');
@@ -344,7 +496,6 @@ const CVInstallerModal = ({ onClose }) => {
          initial={{ scale: 0.8, rotateX: 10 }} 
          animate={{ scale: 1, rotateX: 0 }} 
          exit={{ scale: 0.8, opacity: 0 }}
-         // CORRECCIÓN RESPONSIVE: h-auto en móvil, altura fija en desktop. flex-col en móvil.
          className={`w-full max-w-3xl h-auto md:h-[500px] bg-gradient-to-br ${theme.bgGradient} border-2 ${theme.border} rounded-xl overflow-hidden shadow-[0_0_50px_-10px_rgba(0,0,0,0.5)] flex flex-col md:flex-row relative`}
          style={{ boxShadow: `0 0 40px ${theme.border.replace('border-', 'var(--tw-colors-')}` }}
       >
@@ -569,7 +720,7 @@ const ProjectModal = ({ project, onClose }) => {
                                Ver Capturas
                              </NeonButton>
                              
-                             {project.link ? (
+                             {project.link !== "#" ? (
                                   <NeonButton href={project.link} className="justify-center" icon={<FaExternalLinkAlt/>}>Visitar Web App</NeonButton>
                              ) : (
                                   <NeonButton href={SOCIAL_LINKS.whatsapp} className="justify-center" icon={<FaRocket/>}>Cotizar</NeonButton>
@@ -946,11 +1097,10 @@ function App() {
     if (element) element.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // Filtrado optimizado: Coincidencia exacta con la categoría
   const filteredProjects = activeFilter === "Todos" 
     ? PROJECTS_DATA 
     : PROJECTS_DATA.filter(p => p.category === activeFilter);
-
-  const filters = ["Todos", "Empresarial", "Full Stack", "Web", "Móvil"];
 
   return (
     <div className="relative min-h-screen bg-[#030014] text-white font-sans selection:bg-purple-500 selection:text-white overflow-x-hidden cursor-none md:cursor-auto">
@@ -1180,7 +1330,7 @@ function App() {
              
              {/* Filtros */}
              <div className="flex flex-wrap gap-2">
-                {filters.map(filter => (
+                {FILTERS.map(filter => (
                     <button 
                         key={filter}
                         onClick={() => setActiveFilter(filter)}
