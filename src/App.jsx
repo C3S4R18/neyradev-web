@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, useScroll, useSpring, useMotionValue, useTransform, animate, AnimatePresence } from 'framer-motion';
-import { FaGithub, FaLinkedin, FaWhatsapp, FaInstagram, FaReact, FaAndroid, FaNodeJs, FaRocket, FaExternalLinkAlt, FaBars, FaTimes, FaBoxOpen, FaMobileAlt, FaArrowUp, FaBrain, FaRobot, FaBolt, FaStar, FaLaptopCode, FaCommentDots, FaCheckCircle, FaSearch, FaFilter, FaBuilding, FaChevronLeft, FaChevronRight, FaCode, FaChartLine, FaDatabase, FaServer, FaLayerGroup, FaImages, FaEye, FaPaperPlane, FaUser, FaEnvelope, FaPen, FaRegPaperPlane, FaDownload, FaGamepad, FaMicrochip, FaTerminal, FaSkull, FaLeaf, FaHammer, FaGhost, FaBiohazard, FaBug, FaDragon } from 'react-icons/fa';
+import { FaGithub, FaLinkedin, FaWhatsapp, FaInstagram, FaReact, FaAndroid, FaNodeJs, FaRocket, FaExternalLinkAlt, FaBars, FaTimes, FaBoxOpen, FaMobileAlt, FaArrowUp, FaBrain, FaRobot, FaBolt, FaStar, FaLaptopCode, FaCommentDots, FaCheckCircle, FaSearch, FaFilter, FaBuilding, FaChevronLeft, FaChevronRight, FaCode, FaChartLine, FaDatabase, FaServer, FaLayerGroup, FaImages, FaEye, FaPaperPlane, FaUser, FaEnvelope, FaPen, FaRegPaperPlane, FaDownload, FaGamepad, FaMicrochip, FaTerminal, FaSkull, FaLeaf, FaHammer, FaGhost, FaBiohazard, FaBug, FaDragon, FaCheck } from 'react-icons/fa';
 import { SiTailwindcss, SiKotlin, SiMysql, SiSupabase, SiPhp, SiVercel, SiNextdotjs, SiTypescript, SiPostgresql, SiFirebase, SiFigma, SiNintendoswitch } from "react-icons/si";
 
 // --- DATOS ---
@@ -8,7 +8,7 @@ const SOCIAL_LINKS = {
   github: "https://github.com/NeyraDev", 
   linkedin: "https://www.linkedin.com/in/cesar-neyra-a8792228a/",
   instagram: "https://www.instagram.com/neyradev/",
-  whatsapp: "https://wa.me/51947327420?text=Hola%20NeyraDev,%20vi%20tu%20portafolio%20y%20quiero%20cotizar%20un%20proyecto."
+  whatsapp: "https://wa.me/51947327420"
 };
 
 const SERVICES_DATA = [
@@ -41,7 +41,58 @@ const SERVICES_DATA = [
   }
 ];
 
-// FILTROS: Aseguramos que los strings coincidan EXACTAMENTE con la propiedad `category` de cada proyecto
+// --- NUEVOS DATOS: PLANES DE INVERSIÓN (ACTUALIZADO A SOLES) ---
+const PRICING_DATA = [
+  {
+    title: "Web Moderna",
+    subtitle: "Presencia Digital",
+    price: "600", 
+    description: "Ideal para negocios que buscan captar clientes y tener una vitrina profesional 24/7.",
+    features: [
+      "Diseño UI/UX Personalizado",
+      "Desarrollo ultrarrápido (Next.js)",
+      "Optimización SEO para Google",
+      "Panel Autoadministrable básico",
+      "Diseño 100% Responsivo (Celular/PC)"
+    ],
+    color: "cyan",
+    popular: false,
+    whatsappMsg: "Hola NeyraDev, me interesa cotizar el plan 'Web Moderna'. ¿Podemos agendar una reunión?"
+  },
+  {
+    title: "App Móvil Nativa",
+    subtitle: "La experiencia definitiva",
+    price: "800",
+    description: "Aplicación Android fluida y robusta, lista para publicarse en la Google Play Store.",
+    features: [
+      "Desarrollo Nativo (Kotlin)",
+      "Arquitectura de alto rendimiento",
+      "Funcionamiento Offline (Sin internet)",
+      "Notificaciones Push",
+      "Subida a Google Play Store"
+    ],
+    color: "fuchsia",
+    popular: false, 
+    whatsappMsg: "Hola NeyraDev, me interesa cotizar el plan 'App Móvil Nativa'. Tengo una idea en mente."
+  },
+  {
+    title: "Sistema Full Stack",
+    subtitle: "Solución Empresarial",
+    price: "1500",
+    description: "Ecosistema digital completo. App Móvil conectada a un Panel Web en tiempo real.",
+    features: [
+      "Todo lo del Plan Web + App Móvil",
+      "Base de Datos Cloud (Supabase)",
+      "Sincronización Real-Time",
+      "Autenticación Avanzada de Usuarios",
+      "Arquitectura Escalable"
+    ],
+    color: "purple",
+    popular: true, // Ahora este es el más popular
+    whatsappMsg: "Hola NeyraDev, mi empresa necesita un 'Sistema Full Stack' a medida. ¿Podemos hablar?"
+  }
+];
+
 const FILTERS = ["Todos", "Empresarial", "Full Stack", "Web", "Móvil"];
 
 const PROJECTS_DATA = [
@@ -303,6 +354,102 @@ const PROJECTS_DATA = [
   }
 ];
 
+// --- NUEVO COMPONENTE: SPLASH SCREEN MODERNO (CÓDIGO/CONSOLA) ---
+const SplashScreen = ({ onComplete }) => {
+  const [logs, setLogs] = useState([]);
+  const [progress, setProgress] = useState(0);
+
+  const bootSequence = [
+    "INITIALIZING NEYRADEV OS v2.0.0...",
+    "Resolving dependencies: [React, Next.js, Tailwind]...",
+    "Compiling mobile architecture: [Kotlin, Android]...",
+    "Connecting to backend databases... [OK]",
+    "Bypassing UI security protocols... [SUCCESS]",
+    "Loading holographic modules...",
+    "System Integrity Verified. ACCESS GRANTED."
+  ];
+
+  useEffect(() => {
+    let currentStep = 0;
+    const interval = setInterval(() => {
+      if (currentStep < bootSequence.length) {
+        setLogs(prev => [...prev, bootSequence[currentStep]]);
+        setProgress(Math.floor(((currentStep + 1) / bootSequence.length) * 100));
+        currentStep++;
+      } else {
+        clearInterval(interval);
+        // Espera un poco después de llegar al 100% antes de desaparecer
+        setTimeout(onComplete, 800);
+      }
+    }, 350); // Velocidad a la que se escriben las líneas
+
+    return () => clearInterval(interval);
+  }, [onComplete]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 1 }}
+      exit={{ opacity: 0, y: "-100%" }} // Animación de salida: se desliza hacia arriba
+      transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
+      className="fixed inset-0 z-[99999] bg-[#030014] flex flex-col items-center justify-center p-8 font-mono overflow-hidden"
+    >
+      {/* Fondo Matrix Sutil */}
+      <div className="absolute inset-0 opacity-20 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] pointer-events-none"></div>
+      <div className="absolute top-1/4 -left-20 w-96 h-96 bg-cyan-900/30 rounded-full blur-[120px] pointer-events-none"></div>
+      <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-purple-900/30 rounded-full blur-[120px] pointer-events-none"></div>
+
+      <div className="w-full max-w-2xl relative z-10 flex flex-col h-full justify-center">
+        
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex flex-col items-center mb-10"
+        >
+          <FaTerminal className="text-6xl text-cyan-400 mb-4 animate-pulse drop-shadow-[0_0_15px_rgba(34,211,238,0.6)]" />
+          <h1 className="text-3xl md:text-5xl text-white font-black tracking-[0.2em] flex items-center gap-2">
+            NEYRA<span className="text-cyan-400">DEV</span><span className="text-gray-600 animate-pulse">_</span>
+          </h1>
+        </motion.div>
+
+        {/* Caja de Terminal de Logs */}
+        <div className="flex-grow max-h-[250px] overflow-hidden flex flex-col justify-end mb-8 space-y-3 text-xs md:text-sm">
+          {logs.map((log, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className={index === bootSequence.length - 1 ? "text-cyan-400 font-bold" : "text-gray-400"}
+            >
+              <span className="text-purple-500 font-bold mr-3">{">"}</span> 
+              {log}
+            </motion.div>
+          ))}
+          {progress < 100 && (
+             <div className="animate-pulse text-purple-500 font-bold ml-1">_</div>
+          )}
+        </div>
+
+        {/* Barra de progreso de arranque */}
+        <div className="w-full bg-gray-900/80 h-1.5 rounded-full overflow-hidden relative border border-white/5">
+           <motion.div
+             className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-purple-600 via-cyan-500 to-cyan-300"
+             initial={{ width: "0%" }}
+             animate={{ width: `${progress}%` }}
+             transition={{ duration: 0.3 }}
+           >
+             <div className="absolute top-0 right-0 bottom-0 w-2 bg-white shadow-[0_0_10px_white]"></div>
+           </motion.div>
+        </div>
+        <div className="flex justify-between items-center mt-3 text-[10px] text-gray-500 tracking-widest">
+            <span>SYS_BOOT</span>
+            <span className={progress === 100 ? "text-cyan-400" : ""}>{progress}%</span>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+
 // --- COMPONENTES UI ---
 
 const CustomCursor = () => {
@@ -392,7 +539,6 @@ const CVInstallerModal = ({ onClose }) => {
   const [theme, setTheme] = useState(null);
   const [logs, setLogs] = useState([]);
   
-  // TEMAS ÉPICOS
   const THEMES = [
     {
       id: 'dev',
@@ -470,7 +616,7 @@ const CVInstallerModal = ({ onClose }) => {
   }, [theme]);
 
   useEffect(() => {
-    if (progress >= 100) {
+    if (progress === 100) {
       setLogs(prev => [...prev, "¡DESCARGA COMPLETADA!"]);
       setTimeout(() => {
         const link = document.createElement('a');
@@ -499,7 +645,6 @@ const CVInstallerModal = ({ onClose }) => {
          className={`w-full max-w-3xl h-auto md:h-[500px] bg-gradient-to-br ${theme.bgGradient} border-2 ${theme.border} rounded-xl overflow-hidden shadow-[0_0_50px_-10px_rgba(0,0,0,0.5)] flex flex-col md:flex-row relative`}
          style={{ boxShadow: `0 0 40px ${theme.border.replace('border-', 'var(--tw-colors-')}` }}
       >
-        {/* LADO IZQUIERDO: PERSONAJE / AVATAR */}
         <div className="w-full md:w-1/3 flex flex-col items-center justify-center p-6 border-b md:border-b-0 md:border-r border-white/10 relative overflow-hidden bg-black/30 min-h-[200px]">
             <div className="absolute inset-0 opacity-20 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
             
@@ -515,7 +660,6 @@ const CVInstallerModal = ({ onClose }) => {
             </p>
         </div>
 
-        {/* LADO DERECHO: CONSOLA DE CÓDIGO */}
         <div className="w-full md:w-2/3 flex flex-col p-6 relative">
              <div className="flex items-center justify-between mb-4 border-b border-white/10 pb-2">
                  <span className={`font-mono text-sm ${theme.color} font-bold flex items-center gap-2`}>
@@ -524,7 +668,6 @@ const CVInstallerModal = ({ onClose }) => {
                  <button onClick={onClose} className="text-gray-500 hover:text-white"><FaTimes/></button>
              </div>
 
-             {/* Consola: Altura ajustada para móvil */}
              <div className="flex-grow h-40 md:h-auto bg-black/50 rounded-lg p-4 mb-4 border border-white/5 font-mono text-xs text-gray-300 relative overflow-hidden">
                  <CodeTerminal logs={logs} colorClass={theme.color} />
              </div>
@@ -619,7 +762,6 @@ const ProjectModal = ({ project, onClose }) => {
                         <FaTimes />
                     </button>
 
-                    {/* HEADER TIPO LOGO */}
                     <div className={`h-32 bg-gradient-to-r ${project.gradient} flex items-center justify-center relative overflow-hidden`}>
                         <div className="absolute inset-0 opacity-20 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
                         <div className="text-6xl md:text-7xl text-white drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] transform hover:scale-110 transition-transform duration-500">
@@ -637,7 +779,6 @@ const ProjectModal = ({ project, onClose }) => {
                              <p className="text-gray-400 font-medium">{project.subtitle}</p>
                         </div>
 
-                        {/* SWITCH TOGGLE */}
                         <div className="bg-white/5 p-1 rounded-xl flex mb-6 border border-white/10 relative">
                             <button 
                               onClick={() => setViewMode('business')}
@@ -657,7 +798,6 @@ const ProjectModal = ({ project, onClose }) => {
                             />
                         </div>
 
-                        {/* CONTENIDO DINÁMICO */}
                         <div className="flex-grow overflow-y-auto pr-2 custom-scrollbar min-h-[200px]">
                             <AnimatePresence mode='wait'>
                                 {viewMode === 'business' ? (
@@ -714,7 +854,6 @@ const ProjectModal = ({ project, onClose }) => {
                             </AnimatePresence>
                         </div>
 
-                        {/* ACCIONES */}
                         <div className="mt-8 pt-6 border-t border-white/10 grid grid-cols-1 sm:grid-cols-2 gap-4">
                              <NeonButton onClick={() => setShowGallery(true)} primary={false} icon={<FaImages/>}>
                                Ver Capturas
@@ -766,10 +905,7 @@ const ContactForm = () => {
   };
 
   const inputClasses = "w-full bg-transparent border-none text-white placeholder-transparent focus:outline-none focus:ring-0 peer relative z-10 pt-2";
-  
-  // CORREGIDO: La etiqueta está "arriba" por defecto (top-1) y baja (top-6) SOLO si no hay foco y no hay texto.
   const labelClasses = "absolute left-0 top-1 text-xs text-purple-400 transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-500 peer-placeholder-shown:top-6 peer-focus:top-1 peer-focus:text-xs peer-focus:text-purple-400 flex items-center gap-2 pointer-events-none z-0";
-  
   const containerClasses = (field) => `relative border-b border-white/20 pt-6 pb-2 focus-within:border-purple-500 transition-all overflow-hidden group ${focusedField === field ? 'shadow-[0_4px_20px_-5px_rgba(168,85,247,0.5)]' : ''}`;
 
   return (
@@ -786,7 +922,6 @@ const ContactForm = () => {
        <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-cyan-500/30 rounded-full blur-[80px] pointer-events-none animate-pulse delay-700"></div>
 
       <div className="space-y-6 relative z-10">
-        {/* Input Nombre */}
         <div className={containerClasses('name')} onFocus={() => setFocusedField('name')} onBlur={() => setFocusedField(null)}>
            <input 
              type="text" id="name" name="name" required placeholder="Nombre"
@@ -799,7 +934,6 @@ const ContactForm = () => {
            <div className={`absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-purple-500 to-cyan-500 transition-all duration-500 ${focusedField === 'name' ? 'w-full' : 'w-0'}`}></div>
         </div>
 
-        {/* Input Email */}
         <div className={containerClasses('email')} onFocus={() => setFocusedField('email')} onBlur={() => setFocusedField(null)}>
            <input 
              type="email" id="email" name="email" required placeholder="Email"
@@ -812,7 +946,6 @@ const ContactForm = () => {
            <div className={`absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-cyan-500 to-purple-500 transition-all duration-500 ${focusedField === 'email' ? 'w-full' : 'w-0'}`}></div>
         </div>
 
-        {/* Textarea Mensaje */}
         <div className={containerClasses('message')} onFocus={() => setFocusedField('message')} onBlur={() => setFocusedField(null)}>
            <textarea 
              id="message" name="message" required rows="4" placeholder="Mensaje"
@@ -954,7 +1087,6 @@ const SmartAssistant = () => {
   const [showTyping, setShowTyping] = useState(false);
   const messagesEndRef = useRef(null);
 
-  // Auto-scroll al final del chat
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -963,21 +1095,16 @@ const SmartAssistant = () => {
     scrollToBottom();
   }, [messages, showTyping]);
 
-  // Secuencia de inicio del bot
   useEffect(() => {
     if (open && messages.length === 0) {
       setShowTyping(true);
-      // Mensaje 1
       setTimeout(() => {
         setMessages([{ type: 'bot', text: '¡Hola! Soy NeyraBot 🤖' }]);
         setShowTyping(true);
-        
-        // Mensaje 2
         setTimeout(() => {
           setMessages(prev => [...prev, { type: 'bot', text: '¿En qué puedo ayudarte hoy?' }]);
           setShowTyping(false);
         }, 1000);
-        
       }, 1000);
     }
   }, [open]);
@@ -991,7 +1118,7 @@ const SmartAssistant = () => {
   ];
 
   return (
-    <div className="fixed bottom-8 left-8 z-[999]">
+    <div className="fixed bottom-8 left-8 z-[99999]">
       <AnimatePresence>
         {open && (
           <motion.div
@@ -1000,7 +1127,6 @@ const SmartAssistant = () => {
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
             className="absolute bottom-20 left-0 w-80 bg-[#0a0a1a]/95 backdrop-blur-xl border border-purple-500/30 overflow-hidden rounded-3xl shadow-[0_0_40px_-10px_rgba(168,85,247,0.5)] flex flex-col"
           >
-            {/* Header del Chat */}
             <div className="bg-gradient-to-r from-purple-900/40 to-blue-900/40 p-4 flex items-center gap-3 border-b border-white/10">
                 <div className="w-10 h-10 bg-gradient-to-tr from-purple-500 to-cyan-500 rounded-full flex items-center justify-center shadow-lg relative">
                     <FaRobot className="text-white text-lg" />
@@ -1013,7 +1139,6 @@ const SmartAssistant = () => {
                 <button onClick={toggleOpen} className="ml-auto text-white/50 hover:text-white transition-colors"><FaTimes/></button>
             </div>
             
-            {/* Cuerpo del Chat */}
             <div className="p-4 h-64 overflow-y-auto flex flex-col gap-3 bg-gradient-to-b from-transparent to-black/20 custom-scrollbar">
                 {messages.map((msg, idx) => (
                   <motion.div 
@@ -1029,7 +1154,6 @@ const SmartAssistant = () => {
                 <div ref={messagesEndRef} />
             </div>
 
-            {/* Opciones Rápidas */}
             <div className="p-3 bg-black/40 border-t border-white/5">
                 <p className="text-[10px] text-gray-500 font-bold mb-2 uppercase tracking-wider ml-1">Sugerencias</p>
                 <div className="flex flex-col gap-2">
@@ -1052,15 +1176,12 @@ const SmartAssistant = () => {
         )}
       </AnimatePresence>
       
-      {/* Botón del Chat */}
       <motion.button
         whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
         onClick={toggleOpen}
         className={`w-14 h-14 rounded-full shadow-[0_0_30px_rgba(168,85,247,0.6)] transition-all relative overflow-hidden group flex items-center justify-center z-50 ${open ? 'bg-white text-purple-600 rotate-90' : 'bg-gradient-to-tr from-purple-600 to-blue-600 text-white'}`}
       >
         {open ? <FaTimes className="text-xl" /> : <FaCommentDots className="text-2xl" />}
-        
-        {/* Onda de "llamada" */}
         {!open && (
            <span className="absolute inset-0 rounded-full border-2 border-white/30 animate-ping"></span>
         )}
@@ -1075,12 +1196,20 @@ function App() {
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
   const [menuOpen, setMenuOpen] = useState(false);
   const [showCVModal, setShowCVModal] = useState(false);
+  const [showSplash, setShowSplash] = useState(true); 
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
 
-  // Estados para la galería y el modal
   const [selectedProject, setSelectedProject] = useState(null);
   const [activeFilter, setActiveFilter] = useState("Todos");
+
+  useEffect(() => {
+    if (showSplash) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+  }, [showSplash]);
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -1097,18 +1226,22 @@ function App() {
     if (element) element.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Filtrado optimizado: Coincidencia exacta con la categoría
   const filteredProjects = activeFilter === "Todos" 
     ? PROJECTS_DATA 
     : PROJECTS_DATA.filter(p => p.category === activeFilter);
 
   return (
     <div className="relative min-h-screen bg-[#030014] text-white font-sans selection:bg-purple-500 selection:text-white overflow-x-hidden cursor-none md:cursor-auto">
+      
+      {/* SPLASH SCREEN */}
+      <AnimatePresence>
+        {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
+      </AnimatePresence>
+
       <CustomCursor />
       <ScrollToTopButton />
       <SmartAssistant />
       
-      {/* Modals Globales */}
       <AnimatePresence>
         {selectedProject && <ProjectModal project={selectedProject} onClose={() => setSelectedProject(null)} />}
         {showCVModal && <CVInstallerModal onClose={() => setShowCVModal(false)} />}
@@ -1127,12 +1260,15 @@ function App() {
           className="text-xl md:text-2xl font-bold flex items-center gap-2 cursor-pointer z-50 group"
           onClick={() => scrollToSection('hero')}
         >
-          <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center text-white font-black text-sm shadow-lg group-hover:rotate-12 transition-transform">ND</div>
+          {/* AQUI ESTA LA CORRECCION DE LA FOTO EN EL LOGO */}
+          <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg group-hover:rotate-12 transition-transform border-2 border-purple-500/50">
+             <img src="/mi-foto.png" alt="Cesar Neyra" className="w-full h-full object-cover"/>
+          </div>
           <span className="tracking-tight group-hover:text-purple-400 transition-colors">NeyraDev</span>
         </motion.div>
 
         <div className="hidden md:flex gap-8 text-sm font-medium text-gray-300">
-          {['Servicios', 'Proyectos', 'Trayectoria', 'Contacto'].map((item) => (
+          {['Servicios', 'Proyectos', 'Planes', 'Trayectoria', 'Contacto'].map((item) => (
             <button key={item} onClick={() => scrollToSection(item.toLowerCase())} className="hover:text-purple-400 transition-colors relative group">
               {item}
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-purple-500 transition-all group-hover:w-full"></span>
@@ -1155,22 +1291,22 @@ function App() {
           </a>
         </div>
 
-        <div className="md:hidden z-50 p-2 relative cursor-pointer" onClick={() => setMenuOpen(!menuOpen)}>
-            <FaBars className="text-2xl relative z-[1001]"/>
+        <div className="md:hidden z-[99999] p-2 relative cursor-pointer" onClick={() => setMenuOpen(!menuOpen)}>
+            <FaBars className="text-2xl relative z-[99999]"/>
         </div>
 
-        {/* --- MENÚ MÓVIL --- */}
+        {/* --- MENÚ MÓVIL (CORREGIDO EL Z-INDEX Y EL FONDO) --- */}
         <AnimatePresence>
             {menuOpen && (
                 <motion.div 
                     initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}
-                    className="fixed inset-0 bg-[#030014] z-[1000] flex flex-col items-center justify-center gap-8 md:hidden"
+                    className="fixed inset-0 bg-[#030014] z-[99998] flex flex-col items-center justify-center gap-8 md:hidden"
                 >
-                    <button onClick={() => setMenuOpen(false)} className="absolute top-6 right-6 p-4 text-white/50 hover:text-white">
+                    <button onClick={() => setMenuOpen(false)} className="absolute top-6 right-6 p-4 text-white/50 hover:text-white z-[99999]">
                         <FaTimes className="text-4xl"/>
                     </button>
 
-                    {['Servicios', 'Proyectos', 'Trayectoria', 'Contacto'].map((item) => (
+                    {['Servicios', 'Proyectos', 'Planes', 'Trayectoria', 'Contacto'].map((item) => (
                         <button key={item} onClick={() => scrollToSection(item.toLowerCase())} className="text-3xl font-bold hover:text-purple-400 transition-colors">{item}</button>
                     ))}
                     <div className="flex gap-8 mt-8">
@@ -1198,9 +1334,9 @@ function App() {
            <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 blur-2xl opacity-50 rounded-full"></div>
            <div className="relative z-10 p-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full">
                <img 
-                src={`https://ui-avatars.com/api/?name=Neyra+Dev&background=0f172a&color=fff&size=200&bold=true`} 
-                className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-[#030014] shadow-2xl"
-                alt="Logo"
+                src="/mi-foto.png" 
+                className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-[#030014] shadow-2xl object-cover"
+                alt="Cesar Neyra"
                />
            </div>
            <motion.div 
@@ -1408,8 +1544,83 @@ function App() {
         </div>
       </section>
 
+      {/* --- NUEVA SECCIÓN: PLANES DE INVERSIÓN (PRICING) --- */}
+      <section id="planes" className="py-24 px-6 relative">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-purple-600/10 rounded-full blur-[150px] pointer-events-none"></div>
+          
+          <div className="max-w-7xl mx-auto relative z-10">
+              <div className="text-center mb-16">
+                 <span className="text-purple-400 font-bold tracking-widest uppercase mb-2 text-sm bg-purple-500/10 px-3 py-1 rounded-full border border-purple-500/20">Inversión</span>
+                 <h4 className="text-4xl md:text-5xl font-bold mt-4">Planes a tu medida</h4>
+                 <p className="text-gray-400 mt-4 max-w-2xl mx-auto">Soluciones escalables desarrolladas con las mejores prácticas de la industria. Elige el plan que mejor se adapte a los objetivos de tu negocio.</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+                  {PRICING_DATA.map((plan, index) => (
+                      <motion.div 
+                          key={index}
+                          initial={{ opacity: 0, y: 20 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: index * 0.2 }}
+                          whileHover={{ scale: 1.05, y: -10 }} // Efecto de levitación moderna
+                          className={`relative h-full group cursor-pointer ${plan.popular ? 'md:-mt-8 md:mb-8' : ''}`}
+                      >
+                          {/* Resplandor para el popular */}
+                          {plan.popular && (
+                             <div className="absolute inset-0 bg-purple-500/20 blur-2xl rounded-3xl animate-pulse"></div>
+                          )}
+
+                          {/* Gradiente interno al pasar el mouse (Glassmorphism avanzado) */}
+                          <div className={`absolute inset-0 bg-gradient-to-b from-${plan.color}-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl`}></div>
+
+                          <div className={`h-full bg-[#0a0a1a]/80 backdrop-blur-xl border ${plan.popular ? `border-${plan.color}-500 shadow-[0_0_30px_rgba(168,85,247,0.3)]` : 'border-white/10'} p-8 rounded-3xl relative overflow-hidden flex flex-col transition-colors`}>
+                              
+                              {plan.popular && (
+                                  <div className={`absolute top-0 right-0 bg-${plan.color}-500 text-white text-[10px] font-bold px-4 py-1.5 rounded-bl-lg uppercase tracking-widest animate-pulse`}>
+                                      Más Popular
+                                  </div>
+                              )}
+
+                              <h3 className={`text-2xl font-bold text-${plan.color}-400 mb-1`}>{plan.title}</h3>
+                              <p className="text-gray-400 text-sm mb-6">{plan.subtitle}</p>
+                              
+                              {/* Contenedor del precio con S/ en diseño limpio */}
+                              <div className="mb-6 border-b border-white/10 pb-6 flex items-baseline">
+                                  <span className="text-2xl text-gray-500 font-bold mr-1">S/</span>
+                                  <span className="text-6xl font-black text-white tracking-tighter">{plan.price}</span>
+                              </div>
+
+                              <p className="text-gray-300 text-sm mb-8 leading-relaxed h-16">
+                                  {plan.description}
+                              </p>
+
+                              <ul className="space-y-4 mb-8 flex-grow">
+                                  {plan.features.map((feat, i) => (
+                                      <li key={i} className="flex items-start gap-3 text-sm text-gray-300">
+                                          <FaCheck className={`text-${plan.color}-500 mt-1 flex-shrink-0 group-hover:scale-125 transition-transform`} />
+                                          <span>{feat}</span>
+                                      </li>
+                                  ))}
+                              </ul>
+
+                              <NeonButton 
+                                  href={`${SOCIAL_LINKS.whatsapp}?text=${encodeURIComponent(plan.whatsappMsg)}`}
+                                  primary={plan.popular} 
+                                  className="w-full justify-center mt-auto"
+                                  icon={<FaWhatsapp/>}
+                              >
+                                  Cotizar Plan
+                              </NeonButton>
+                          </div>
+                      </motion.div>
+                  ))}
+              </div>
+          </div>
+      </section>
+
       {/* --- TRAYECTORIA --- */}
-      <section id="trayectoria" className="py-24 px-6 relative">
+      <section id="trayectoria" className="py-24 px-6 relative bg-[#050214]">
           <div className="max-w-4xl mx-auto">
              <div className="text-center mb-16">
                  <h4 className="text-3xl md:text-4xl font-bold">Mi Trayectoria</h4>
