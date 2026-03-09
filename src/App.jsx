@@ -6,7 +6,7 @@ import { SiTailwindcss, SiKotlin, SiMysql, SiSupabase, SiPhp, SiVercel, SiNextdo
 // --- DATOS ---
 const SOCIAL_LINKS = {
   github: "https://github.com/NeyraDev", 
-  linkedin: "https://www.linkedin.com/in/cesar-neyra-a8792228a/",
+  linkedin: "https://www.linkedin.com/in/cesarneyra/",
   instagram: "https://www.instagram.com/neyradev/",
   whatsapp: "https://wa.me/51947327420"
 };
@@ -41,9 +41,10 @@ const SERVICES_DATA = [
   }
 ];
 
-// --- NUEVOS DATOS: PLANES DE INVERSIÓN (ACTUALIZADO A SOLES) ---
+// --- NUEVOS DATOS: PLANES DE INVERSIÓN DINÁMICOS CON SUB-NIVELES ---
 const PRICING_DATA = [
   {
+    id: "web",
     title: "Web Moderna",
     subtitle: "Presencia Digital",
     price: "600", 
@@ -57,9 +58,30 @@ const PRICING_DATA = [
     ],
     color: "cyan",
     popular: false,
-    whatsappMsg: "Hola NeyraDev, me interesa cotizar el plan 'Web Moderna'. ¿Podemos agendar una reunión?"
+    actionText: "Ver Opciones Web",
+    tiers: [
+      {
+        title: "Informativa", subtitle: "Landing Page Escencial", price: "600",
+        description: "Perfecta para presentar tus servicios, captar leads y tener presencia oficial.",
+        features: ["Diseño One-Page moderno", "Formulario de contacto", "Botón directo a WhatsApp", "SEO Básico inicial", "Adaptable a Celulares"],
+        color: "cyan", popular: false, whatsappMsg: "Hola NeyraDev, me interesa cotizar una Web Informativa (Desde S/600)."
+      },
+      {
+        title: "Web Dinámica", subtitle: "Autoadministrable", price: "1200",
+        description: "Web con varias secciones y panel administrador para gestionar tu contenido.",
+        features: ["Múltiples vistas (Inicio, Nostros...)", "Panel de Administrador seguro", "Base de Datos", "Gestión de Blog o Portafolio", "Dashboard básico de métricas"],
+        color: "blue", popular: true, whatsappMsg: "Hola NeyraDev, me interesa cotizar una Web Dinámica con Panel (Desde S/1200)."
+      },
+      {
+        title: "E-Commerce", subtitle: "Tienda Virtual Completa", price: "2500",
+        description: "Vende en línea 24/7 con carrito de compras y pasarela de pagos.",
+        features: ["Pasarela de pagos (Tarjetas/Yape)", "Carrito de compras dinámico", "Gestión de inventario y pedidos", "Perfiles de clientes", "Buscador avanzado y filtros"],
+        color: "indigo", popular: false, whatsappMsg: "Hola NeyraDev, me interesa cotizar un E-Commerce / Tienda Virtual (Desde S/2500)."
+      }
+    ]
   },
   {
+    id: "app",
     title: "App Móvil Nativa",
     subtitle: "La experiencia definitiva",
     price: "800",
@@ -73,9 +95,30 @@ const PRICING_DATA = [
     ],
     color: "fuchsia",
     popular: false, 
-    whatsappMsg: "Hola NeyraDev, me interesa cotizar el plan 'App Móvil Nativa'. Tengo una idea en mente."
+    actionText: "Ver Opciones Móviles",
+    tiers: [
+      {
+        title: "App Básica", subtitle: "Catálogo / Herramienta", price: "800",
+        description: "Ideal para mostrar catálogos, noticias o herramientas útiles sin requerir login.",
+        features: ["Desarrollo Nativo (Kotlin)", "Consumo de API", "Modo Offline Básico", "Animaciones fluidas", "UI/UX intuitiva"],
+        color: "pink", popular: false, whatsappMsg: "Hola NeyraDev, me interesa cotizar una App Básica (Desde S/800)."
+      },
+      {
+        title: "App Interactiva", subtitle: "Gestión y Usuarios", price: "1800",
+        description: "App con registro de usuarios, interacción en tiempo real y perfiles.",
+        features: ["Autenticación segura (Google/Email)", "Base de datos en la nube", "Subida de imágenes/archivos", "Notificaciones Push", "Panel de configuración"],
+        color: "fuchsia", popular: true, whatsappMsg: "Hola NeyraDev, me interesa cotizar una App Interactiva con Usuarios (Desde S/1800)."
+      },
+      {
+        title: "App Compleja", subtitle: "Geolocalización / E-commerce", price: "3500",
+        description: "Aplicaciones avanzadas con mapas, tracking o pasarelas de pago integradas.",
+        features: ["GPS y Mapas en vivo", "Integración de Pagos Móviles", "Arquitectura escalable MVVM", "Múltiples tipos de usuarios", "Soporte y subida a Play Store"],
+        color: "purple", popular: false, whatsappMsg: "Hola NeyraDev, me interesa cotizar una App Compleja/Avanzada (Desde S/3500)."
+      }
+    ]
   },
   {
+    id: "fullstack",
     title: "Sistema Full Stack",
     subtitle: "Solución Empresarial",
     price: "1500",
@@ -88,8 +131,28 @@ const PRICING_DATA = [
       "Arquitectura Escalable"
     ],
     color: "purple",
-    popular: true, // Ahora este es el más popular
-    whatsappMsg: "Hola NeyraDev, mi empresa necesita un 'Sistema Full Stack' a medida. ¿Podemos hablar?"
+    popular: true,
+    actionText: "Ver Opciones Full Stack",
+    tiers: [
+      {
+        title: "Plan Inicial", subtitle: "App + Web Administrativa", price: "1500",
+        description: "Un panel web para el administrador y una aplicación móvil para los usuarios.",
+        features: ["App Android Nativa", "Panel Web en Next.js", "Base de Datos Centralizada", "Gestión de roles simple", "Despliegue inicial"],
+        color: "violet", popular: false, whatsappMsg: "Hola NeyraDev, me interesa el Sistema Full Stack Inicial (Desde S/1500)."
+      },
+      {
+        title: "Plan Profesional", subtitle: "Sincronización Total", price: "3000",
+        description: "Ecosistema robusto con interacción en tiempo real entre todas las plataformas.",
+        features: ["Sincronización Real-Time completa", "Roles y Permisos avanzados", "Reportes y Gráficos Web", "Notificaciones Multi-plataforma", "Soporte Técnico extendido"],
+        color: "purple", popular: true, whatsappMsg: "Hola NeyraDev, me interesa el Sistema Full Stack Profesional (Desde S/3000)."
+      },
+      {
+        title: "Plan Enterprise", subtitle: "Escalabilidad a Medida", price: "5500",
+        description: "Arquitectura compleja para startups, software corporativo o sistemas de alta demanda.",
+        features: ["Múltiples Apps (Ej. Cliente/Repartidor)", "APIs Personalizadas (Node.js/PHP)", "Integración de facturación/pagos", "Infraestructura Cloud Segura", "Mantenimiento Continuo"],
+        color: "indigo", popular: false, whatsappMsg: "Hola NeyraDev, busco una Solución Enterprise Full Stack a medida (Desde S/5500)."
+      }
+    ]
   }
 ];
 
@@ -378,10 +441,9 @@ const SplashScreen = ({ onComplete }) => {
         currentStep++;
       } else {
         clearInterval(interval);
-        // Espera un poco después de llegar al 100% antes de desaparecer
         setTimeout(onComplete, 800);
       }
-    }, 350); // Velocidad a la que se escriben las líneas
+    }, 350); 
 
     return () => clearInterval(interval);
   }, [onComplete]);
@@ -389,11 +451,10 @@ const SplashScreen = ({ onComplete }) => {
   return (
     <motion.div
       initial={{ opacity: 1 }}
-      exit={{ opacity: 0, y: "-100%" }} // Animación de salida: se desliza hacia arriba
+      exit={{ opacity: 0, y: "-100%" }} 
       transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
       className="fixed inset-0 z-[99999] bg-[#030014] flex flex-col items-center justify-center p-8 font-mono overflow-hidden"
     >
-      {/* Fondo Matrix Sutil */}
       <div className="absolute inset-0 opacity-20 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] pointer-events-none"></div>
       <div className="absolute top-1/4 -left-20 w-96 h-96 bg-cyan-900/30 rounded-full blur-[120px] pointer-events-none"></div>
       <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-purple-900/30 rounded-full blur-[120px] pointer-events-none"></div>
@@ -411,7 +472,6 @@ const SplashScreen = ({ onComplete }) => {
           </h1>
         </motion.div>
 
-        {/* Caja de Terminal de Logs */}
         <div className="flex-grow max-h-[250px] overflow-hidden flex flex-col justify-end mb-8 space-y-3 text-xs md:text-sm">
           {logs.map((log, index) => (
             <motion.div
@@ -429,7 +489,6 @@ const SplashScreen = ({ onComplete }) => {
           )}
         </div>
 
-        {/* Barra de progreso de arranque */}
         <div className="w-full bg-gray-900/80 h-1.5 rounded-full overflow-hidden relative border border-white/5">
            <motion.div
              className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-purple-600 via-cyan-500 to-cyan-300"
@@ -892,7 +951,6 @@ const ContactForm = () => {
     setIsSubmitting(true);
     
     setTimeout(() => {
-      // LOGICA PARA ABRIR GMAIL WEB DIRECTAMENTE
       const subject = `Nuevo Mensaje de Portafolio: ${formData.name}`;
       const body = `Nombre: ${formData.name}\nEmail: ${formData.email}\n\nMensaje:\n${formData.message}`;
       const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=neyrajcf@gmail.com&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
@@ -1190,6 +1248,148 @@ const SmartAssistant = () => {
   );
 };
 
+// --- SECCIÓN DE PRECIOS DINÁMICA ---
+const PricingSection = () => {
+    const [selectedCategory, setSelectedCategory] = useState(null);
+
+    return (
+        <section id="planes" className="py-24 px-6 relative min-h-screen flex flex-col justify-center">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-purple-600/10 rounded-full blur-[150px] pointer-events-none"></div>
+            
+            <div className="max-w-7xl mx-auto relative z-10 w-full">
+                <div className="text-center mb-16">
+                   <span className="text-purple-400 font-bold tracking-widest uppercase mb-2 text-sm bg-purple-500/10 px-3 py-1 rounded-full border border-purple-500/20">Inversión</span>
+                   <h4 className="text-4xl md:text-5xl font-bold mt-4">
+                       {selectedCategory ? `Opciones: ${selectedCategory.title}` : "Planes a tu medida"}
+                   </h4>
+                   <p className="text-gray-400 mt-4 max-w-2xl mx-auto">
+                       {selectedCategory 
+                           ? "Selecciona el nivel de desarrollo que tu proyecto necesita para escalar al siguiente nivel." 
+                           : "Soluciones escalables desarrolladas con las mejores prácticas de la industria. Elige una categoría para ver opciones."}
+                   </p>
+                </div>
+
+                <AnimatePresence mode="wait">
+                    {!selectedCategory ? (
+                        /* VISTA 1: CATEGORÍAS PRINCIPALES */
+                        <motion.div 
+                            key="main-categories"
+                            initial={{ opacity: 0, x: -30 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -30 }}
+                            transition={{ duration: 0.4 }}
+                            className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center"
+                        >
+                            {PRICING_DATA.map((plan, index) => (
+                                <motion.div 
+                                    key={index}
+                                    whileHover={{ scale: 1.05, y: -10 }}
+                                    className={`relative h-full group ${plan.popular ? 'md:-mt-8 md:mb-8' : ''}`}
+                                >
+                                    {plan.popular && <div className="absolute inset-0 bg-purple-500/20 blur-2xl rounded-3xl animate-pulse"></div>}
+                                    <div className={`absolute inset-0 bg-gradient-to-b from-${plan.color}-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl`}></div>
+
+                                    <div className={`h-full bg-[#0a0a1a]/80 backdrop-blur-xl border ${plan.popular ? `border-${plan.color}-500 shadow-[0_0_30px_rgba(168,85,247,0.3)]` : 'border-white/10'} p-8 rounded-3xl relative overflow-hidden flex flex-col transition-colors`}>
+                                        {plan.popular && (
+                                            <div className={`absolute top-0 right-0 bg-${plan.color}-500 text-white text-[10px] font-bold px-4 py-1.5 rounded-bl-lg uppercase tracking-widest animate-pulse`}>
+                                                Más Popular
+                                            </div>
+                                        )}
+                                        <h3 className={`text-2xl font-bold text-${plan.color}-400 mb-1`}>{plan.title}</h3>
+                                        <p className="text-gray-400 text-sm mb-6">{plan.subtitle}</p>
+                                        <div className="mb-6 border-b border-white/10 pb-6 flex items-baseline">
+                                            <span className="text-2xl text-gray-500 font-bold mr-1">Desde S/</span>
+                                            <span className="text-6xl font-black text-white tracking-tighter">{plan.price}</span>
+                                        </div>
+                                        <p className="text-gray-300 text-sm mb-8 leading-relaxed h-16">{plan.description}</p>
+                                        <ul className="space-y-4 mb-8 flex-grow">
+                                            {plan.features.map((feat, i) => (
+                                                <li key={i} className="flex items-start gap-3 text-sm text-gray-300">
+                                                    <FaCheck className={`text-${plan.color}-500 mt-1 flex-shrink-0 group-hover:scale-125 transition-transform`} />
+                                                    <span>{feat}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                        <NeonButton 
+                                            onClick={() => setSelectedCategory(plan)}
+                                            primary={plan.popular} 
+                                            className="w-full justify-center mt-auto"
+                                            icon={<FaEye/>}
+                                        >
+                                            {plan.actionText}
+                                        </NeonButton>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </motion.div>
+                    ) : (
+                        /* VISTA 2: SUB-NIVELES (TIERS) */
+                        <motion.div 
+                            key="detail-tiers"
+                            initial={{ opacity: 0, x: 30 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 30 }}
+                            transition={{ duration: 0.4 }}
+                            className="w-full"
+                        >
+                            <button 
+                                onClick={() => setSelectedCategory(null)} 
+                                className="text-gray-400 hover:text-white flex items-center gap-2 mb-8 transition-colors group px-4 py-2 bg-white/5 rounded-full border border-white/10 mx-auto md:mx-0"
+                            >
+                                <FaChevronLeft className="group-hover:-translate-x-1 transition-transform"/> Volver a Categorías
+                            </button>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+                                {selectedCategory.tiers.map((tier, index) => (
+                                    <motion.div 
+                                        key={index}
+                                        whileHover={{ scale: 1.05, y: -10 }}
+                                        className={`relative h-full group ${tier.popular ? 'md:-mt-8 md:mb-8' : ''}`}
+                                    >
+                                        {tier.popular && <div className={`absolute inset-0 bg-${tier.color}-500/20 blur-2xl rounded-3xl animate-pulse`}></div>}
+                                        <div className={`absolute inset-0 bg-gradient-to-b from-${tier.color}-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl`}></div>
+
+                                        <div className={`h-full bg-[#0a0a1a]/80 backdrop-blur-xl border ${tier.popular ? `border-${tier.color}-500 shadow-[0_0_30px_rgba(168,85,247,0.3)]` : 'border-white/10'} p-8 rounded-3xl relative overflow-hidden flex flex-col transition-colors`}>
+                                            {tier.popular && (
+                                                <div className={`absolute top-0 right-0 bg-${tier.color}-500 text-white text-[10px] font-bold px-4 py-1.5 rounded-bl-lg uppercase tracking-widest animate-pulse`}>
+                                                    Recomendado
+                                                </div>
+                                            )}
+                                            <h3 className={`text-2xl font-bold text-${tier.color}-400 mb-1`}>{tier.title}</h3>
+                                            <p className="text-gray-400 text-sm mb-6">{tier.subtitle}</p>
+                                            <div className="mb-6 border-b border-white/10 pb-6 flex items-baseline">
+                                                <span className="text-2xl text-gray-500 font-bold mr-1">S/</span>
+                                                <span className="text-6xl font-black text-white tracking-tighter">{tier.price}</span>
+                                            </div>
+                                            <p className="text-gray-300 text-sm mb-8 leading-relaxed h-16">{tier.description}</p>
+                                            <ul className="space-y-4 mb-8 flex-grow">
+                                                {tier.features.map((feat, i) => (
+                                                    <li key={i} className="flex items-start gap-3 text-sm text-gray-300">
+                                                        <FaCheck className={`text-${tier.color}-500 mt-1 flex-shrink-0 group-hover:scale-125 transition-transform`} />
+                                                        <span>{feat}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                            <NeonButton 
+                                                href={`${SOCIAL_LINKS.whatsapp}?text=${encodeURIComponent(tier.whatsappMsg)}`}
+                                                primary={tier.popular} 
+                                                className="w-full justify-center mt-auto"
+                                                icon={<FaWhatsapp/>}
+                                            >
+                                                Cotizar Plan
+                                            </NeonButton>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+        </section>
+    );
+};
+
 // --- APP PRINCIPAL ---
 function App() {
   const { scrollYProgress } = useScroll();
@@ -1260,7 +1460,6 @@ function App() {
           className="text-xl md:text-2xl font-bold flex items-center gap-2 cursor-pointer z-50 group"
           onClick={() => scrollToSection('hero')}
         >
-          {/* AQUI ESTA LA CORRECCION DE LA FOTO EN EL LOGO */}
           <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg group-hover:rotate-12 transition-transform border-2 border-purple-500/50">
              <img src="/mi-foto.png" alt="Cesar Neyra" className="w-full h-full object-cover"/>
           </div>
@@ -1295,7 +1494,7 @@ function App() {
             <FaBars className="text-2xl relative z-[99999]"/>
         </div>
 
-        {/* --- MENÚ MÓVIL (CORREGIDO EL Z-INDEX Y EL FONDO) --- */}
+        {/* --- MENÚ MÓVIL --- */}
         <AnimatePresence>
             {menuOpen && (
                 <motion.div 
@@ -1544,80 +1743,8 @@ function App() {
         </div>
       </section>
 
-      {/* --- NUEVA SECCIÓN: PLANES DE INVERSIÓN (PRICING) --- */}
-      <section id="planes" className="py-24 px-6 relative">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-purple-600/10 rounded-full blur-[150px] pointer-events-none"></div>
-          
-          <div className="max-w-7xl mx-auto relative z-10">
-              <div className="text-center mb-16">
-                 <span className="text-purple-400 font-bold tracking-widest uppercase mb-2 text-sm bg-purple-500/10 px-3 py-1 rounded-full border border-purple-500/20">Inversión</span>
-                 <h4 className="text-4xl md:text-5xl font-bold mt-4">Planes a tu medida</h4>
-                 <p className="text-gray-400 mt-4 max-w-2xl mx-auto">Soluciones escalables desarrolladas con las mejores prácticas de la industria. Elige el plan que mejor se adapte a los objetivos de tu negocio.</p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
-                  {PRICING_DATA.map((plan, index) => (
-                      <motion.div 
-                          key={index}
-                          initial={{ opacity: 0, y: 20 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ delay: index * 0.2 }}
-                          whileHover={{ scale: 1.05, y: -10 }} // Efecto de levitación moderna
-                          className={`relative h-full group cursor-pointer ${plan.popular ? 'md:-mt-8 md:mb-8' : ''}`}
-                      >
-                          {/* Resplandor para el popular */}
-                          {plan.popular && (
-                             <div className="absolute inset-0 bg-purple-500/20 blur-2xl rounded-3xl animate-pulse"></div>
-                          )}
-
-                          {/* Gradiente interno al pasar el mouse (Glassmorphism avanzado) */}
-                          <div className={`absolute inset-0 bg-gradient-to-b from-${plan.color}-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl`}></div>
-
-                          <div className={`h-full bg-[#0a0a1a]/80 backdrop-blur-xl border ${plan.popular ? `border-${plan.color}-500 shadow-[0_0_30px_rgba(168,85,247,0.3)]` : 'border-white/10'} p-8 rounded-3xl relative overflow-hidden flex flex-col transition-colors`}>
-                              
-                              {plan.popular && (
-                                  <div className={`absolute top-0 right-0 bg-${plan.color}-500 text-white text-[10px] font-bold px-4 py-1.5 rounded-bl-lg uppercase tracking-widest animate-pulse`}>
-                                      Más Popular
-                                  </div>
-                              )}
-
-                              <h3 className={`text-2xl font-bold text-${plan.color}-400 mb-1`}>{plan.title}</h3>
-                              <p className="text-gray-400 text-sm mb-6">{plan.subtitle}</p>
-                              
-                              {/* Contenedor del precio con S/ en diseño limpio */}
-                              <div className="mb-6 border-b border-white/10 pb-6 flex items-baseline">
-                                  <span className="text-2xl text-gray-500 font-bold mr-1">S/</span>
-                                  <span className="text-6xl font-black text-white tracking-tighter">{plan.price}</span>
-                              </div>
-
-                              <p className="text-gray-300 text-sm mb-8 leading-relaxed h-16">
-                                  {plan.description}
-                              </p>
-
-                              <ul className="space-y-4 mb-8 flex-grow">
-                                  {plan.features.map((feat, i) => (
-                                      <li key={i} className="flex items-start gap-3 text-sm text-gray-300">
-                                          <FaCheck className={`text-${plan.color}-500 mt-1 flex-shrink-0 group-hover:scale-125 transition-transform`} />
-                                          <span>{feat}</span>
-                                      </li>
-                                  ))}
-                              </ul>
-
-                              <NeonButton 
-                                  href={`${SOCIAL_LINKS.whatsapp}?text=${encodeURIComponent(plan.whatsappMsg)}`}
-                                  primary={plan.popular} 
-                                  className="w-full justify-center mt-auto"
-                                  icon={<FaWhatsapp/>}
-                              >
-                                  Cotizar Plan
-                              </NeonButton>
-                          </div>
-                      </motion.div>
-                  ))}
-              </div>
-          </div>
-      </section>
+      {/* --- NUEVA SECCIÓN: PLANES DE INVERSIÓN (PRICING DINÁMICO) --- */}
+      <PricingSection />
 
       {/* --- TRAYECTORIA --- */}
       <section id="trayectoria" className="py-24 px-6 relative bg-[#050214]">
