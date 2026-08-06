@@ -3,7 +3,8 @@ import { motion, useScroll, useSpring, useMotionValue, animate, AnimatePresence 
 import { FaGithub, FaLinkedin, FaWhatsapp, FaInstagram, FaReact, FaAndroid, FaNodeJs, FaRocket, FaExternalLinkAlt, FaBars, FaTimes, FaBoxOpen, FaMobileAlt, FaArrowUp, FaBrain, FaRobot, FaBolt, FaStar, FaLaptopCode, FaCommentDots, FaCheckCircle, FaSearch, FaFilter, FaBuilding, FaChevronLeft, FaChevronRight, FaCode, FaChartLine, FaDatabase, FaServer, FaLayerGroup, FaImages, FaEye, FaPaperPlane, FaUser, FaEnvelope, FaPen, FaRegPaperPlane, FaDownload, FaGamepad, FaMicrochip, FaTerminal, FaSkull, FaLeaf, FaHammer, FaGhost, FaBiohazard, FaBug, FaDragon, FaCheck, FaGlobe, FaChevronDown, FaSun, FaMoon, FaCoins } from 'react-icons/fa';
 import { SiTailwindcss, SiKotlin, SiMysql, SiSupabase, SiPhp, SiVercel, SiNextdotjs, SiTypescript, SiPostgresql, SiFirebase, SiFigma, SiNintendoswitch } from "react-icons/si";
 import { useI18n } from './i18n/context';
-import { HAS_CHOSEN_LANG, LANGUAGES } from './i18n/config';
+import { DETECTED_LANG, HAS_CHOSEN_LANG, LANGUAGES } from './i18n/config';
+import Flag from './i18n/Flag';
 import { useTheme } from './theme/context';
 import { useCurrency } from './currency/context';
 import { CURRENCIES, formatPrice } from './currency/config';
@@ -1571,7 +1572,7 @@ const LanguageSwitcher = ({ className = "" }) => {
         aria-expanded={open}
         className="flex items-center gap-2 bg-veil/5 hover:bg-veil/10 border border-veil/10 hover:border-purple-500/40 px-3 py-2 rounded-full text-sm font-bold transition-all"
       >
-        <FaGlobe className="text-purple-400" />
+        <Flag code={lang} className="w-5 h-3.5" />
         <span className="uppercase tracking-wider">{lang}</span>
         <FaChevronDown className={`text-[10px] text-ink/40 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
@@ -1589,11 +1590,11 @@ const LanguageSwitcher = ({ className = "" }) => {
               <li key={l.code}>
                 <button
                   onClick={() => { changeLang(l.code); setOpen(false); }}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors text-left ${
-                    l.code === lang ? 'bg-purple-600/25 text-white' : 'text-ink-soft hover:bg-veil/5 hover:text-ink'
+                  className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-colors text-left ${
+                    l.code === lang ? 'bg-purple-600/25 text-ink' : 'text-ink-soft hover:bg-veil/5 hover:text-ink'
                   }`}
                 >
-                  <span className="font-mono text-[10px] uppercase tracking-widest text-purple-400 w-6 flex-shrink-0">{l.code}</span>
+                  <Flag code={l.code} className="w-5 h-3.5" />
                   <span className="flex-grow truncate">{l.native}</span>
                   {l.code === lang && <FaCheck className="text-purple-400 text-xs flex-shrink-0" />}
                 </button>
@@ -1691,19 +1692,25 @@ const LanguageModal = ({ onClose }) => {
               <button
                 key={l.code}
                 onClick={() => changeLang(l.code)}
-                className={`relative flex flex-col items-start gap-0.5 px-3 py-3 rounded-2xl border text-left transition-all ${
+                aria-pressed={l.code === lang}
+                className={`relative flex items-center gap-2.5 px-3 py-2.5 rounded-2xl border text-left transition-all ${
                   l.code === lang
                     ? 'bg-purple-600/25 border-purple-500 text-ink shadow-[0_0_20px_-5px_rgba(168,85,247,0.6)]'
                     : 'bg-veil/5 border-veil/10 text-ink-soft hover:border-veil/30 hover:bg-veil/10'
                 }`}
               >
-                <span className="font-mono text-[10px] uppercase tracking-widest text-purple-400">{l.code}</span>
-                <span className="font-bold text-sm truncate w-full">{l.native}</span>
-                {l.code === lang && (
-                  <span className="absolute top-2 right-2 text-[9px] font-bold uppercase tracking-wider text-purple-300">
-                    {t.lang.detected}
-                  </span>
-                )}
+                <Flag code={l.code} className="w-7 h-5" />
+                <span className="min-w-0 flex-grow">
+                  <span className="block font-bold text-sm truncate">{l.native}</span>
+                  {/* La etiqueta va en el idioma que propuso el navegador, no en
+                      el seleccionado: antes saltaba a cualquier opción pulsada. */}
+                  {l.code === DETECTED_LANG && (
+                    <span className="block text-[9px] font-bold uppercase tracking-wider text-purple-400 leading-tight">
+                      {t.lang.detected}
+                    </span>
+                  )}
+                </span>
+                {l.code === lang && <FaCheck className="text-purple-400 text-xs shrink-0" />}
               </button>
             ))}
           </div>

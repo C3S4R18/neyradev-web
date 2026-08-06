@@ -65,6 +65,11 @@ export function detectLang() {
 
 // Se resuelve una sola vez al cargar el módulo, fuera de React: leer
 // localStorage o navigator durante el render es impuro.
+// El idioma que sugiere el navegador, al margen de lo que haya elegido el
+// visitante después. El modal marca este como "detectado"; sin esta constante
+// la etiqueta saltaba a cualquier opción que se pulsara, lo cual era falso.
+export const DETECTED_LANG = detectLang();
+
 export const STORED_LANG = readStoredLang();
 export const INITIAL_LANG = STORED_LANG ?? detectLang();
 export const HAS_CHOSEN_LANG = STORED_LANG !== null;
