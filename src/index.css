@@ -2,17 +2,153 @@
 @tailwind components;
 @tailwind utilities;
 
+/* --- TOKENS DE TEMA ---
+   Valores RGB sueltos para que Tailwind pueda aplicarles opacidad
+   (bg-surface/80 -> rgb(var(--surface) / 0.8)).
+
+   `veil` es la capa translúcida que se superpone al fondo: en oscuro es blanca
+   (bg-veil/5 aclara), en claro es casi negra (bg-veil/5 oscurece). Sin esto,
+   todos los `bg-white/5` desaparecen sobre fondo blanco. */
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: 3 0 20;
+  --page-alt: 5 2 20;
+  --surface: 10 10 26;
+  --surface-deep: 15 12 41;
+  --ink: 255 255 255;
+  --ink-soft: 156 163 175;
+  /* gray-500 daba 4,1:1 sobre el fondo; esto sube a ~6:1 sin cambiar el tono. */
+  --ink-faint: 138 143 158;
+  --veil: 255 255 255;
+  --grid-line: 255 255 255;
+  --noise-opacity: 0.2;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --page: 249 249 253;
+  --page-alt: 241 240 250;
+  --surface: 255 255 255;
+  --surface-deep: 255 255 255;
+  --ink: 17 15 32;
+  --ink-soft: 74 71 99;
+  --ink-faint: 113 110 138;
+  --veil: 17 15 32;
+  --grid-line: 17 15 32;
+  --noise-opacity: 0.06;
+}
+
 body {
-  background-color: #030014; /* Negro profundo con tinte azul */
-  color: white;
+  background-color: rgb(var(--page));
+  color: rgb(var(--ink));
   overflow-x: hidden;
+}
+
+/* --- ACENTOS EN MODO CLARO ---
+   Los tonos 300/400 de Tailwind están pensados para fondo oscuro: sobre blanco
+   dan 1,7:1 - 2,5:1 y son ilegibles. En claro los bajamos a 700/800, que pasan
+   4,5:1 sin cambiar el color de marca.
+
+   `.force-dark` marca las superficies que son oscuras en los dos temas (la
+   consola de arranque, el instalador del CV, el visor de la galería). Ahí se
+   restauran los tonos claros: dos clases ganan en especificidad a una. */
+:root[data-theme="light"] .text-purple-200 { color: #6b21a8; }
+:root[data-theme="light"] .text-purple-300 { color: #7e22ce; }
+:root[data-theme="light"] .text-purple-400 { color: #7e22ce; }
+:root[data-theme="light"] .text-purple-500 { color: #9333ea; }
+:root[data-theme="light"] .text-cyan-300 { color: #0e7490; }
+:root[data-theme="light"] .text-cyan-400 { color: #0e7490; }
+:root[data-theme="light"] .text-cyan-500 { color: #0891b2; }
+:root[data-theme="light"] .text-blue-300 { color: #1d4ed8; }
+:root[data-theme="light"] .text-blue-400 { color: #1d4ed8; }
+:root[data-theme="light"] .text-fuchsia-400 { color: #a21caf; }
+:root[data-theme="light"] .text-pink-400 { color: #be185d; }
+:root[data-theme="light"] .text-indigo-400 { color: #4338ca; }
+:root[data-theme="light"] .text-violet-400 { color: #6d28d9; }
+:root[data-theme="light"] .text-green-400 { color: #15803d; }
+:root[data-theme="light"] .text-red-400 { color: #b91c1c; }
+:root[data-theme="light"] .text-yellow-400 { color: #b45309; }
+
+:root[data-theme="light"] .force-dark .text-purple-500 { color: #a855f7; }
+:root[data-theme="light"] .force-dark .text-cyan-400 { color: #22d3ee; }
+:root[data-theme="light"] .force-dark .text-green-400 { color: #4ade80; }
+:root[data-theme="light"] .force-dark .text-yellow-400 { color: #facc15; }
+:root[data-theme="light"] .force-dark .text-red-400 { color: #f87171; }
+
+/* --- PANTALLA DE ENTRADA ---
+   Animaciones en CSS, no en JS: la pantalla se quita con un temporizador, así
+   que aunque estas no lleguen a ejecutarse nada se queda bloqueado. */
+@keyframes splash-ring {
+  from { stroke-dashoffset: 352; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes splash-pop {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes splash-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes splash-bar {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+.splash-ring {
+  stroke-dasharray: 352;
+  animation: splash-ring 1s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+.splash-pop { animation: splash-pop 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.splash-rise { animation: splash-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both; }
+.splash-rise-delay { animation-delay: 0.28s; }
+.splash-bar { animation: splash-bar 1s cubic-bezier(0.65, 0, 0.35, 1) forwards; }
+
+/* --- FOCO DE TECLADO ---
+   Varios componentes traían `focus:outline-none` sin poner nada en su lugar:
+   quien navega con Tab no veía dónde estaba. `!important` es deliberado, es lo
+   único que gana a esa utilidad de Tailwind. Usa :focus-visible, así que el
+   anillo no aparece al hacer clic con el ratón. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid #a855f7 !important;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* --- MEZCLAS QUE DEPENDEN DEL TEMA ---
+   `difference` y `screen` solo funcionan sobre fondo oscuro. Sobre blanco,
+   `difference` convertía el anillo morado del cursor en verde fosforito y
+   `screen` hacía desaparecer el halo que sigue al ratón. */
+.cursor-ring { mix-blend-mode: difference; }
+.pointer-glow { mix-blend-mode: screen; }
+
+:root[data-theme="light"] .cursor-ring {
+  mix-blend-mode: normal;
+  border-color: #9333ea;
+  box-shadow: 0 0 12px rgb(147 51 234 / 0.35);
+}
+:root[data-theme="light"] .pointer-glow {
+  mix-blend-mode: multiply;
+  opacity: 0.5;
+}
+
+/* Grano de fondo (SVG inline: sin depender de un host externo) */
+.bg-noise {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
 }
 
 /* Efecto de Grid Futurista en el fondo */
 .bg-grid {
   background-size: 50px 50px;
-  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-                    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-image: linear-gradient(to right, rgb(var(--grid-line) / 0.05) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgb(var(--grid-line) / 0.05) 1px, transparent 1px);
   mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
 }
 
@@ -21,9 +157,59 @@ body {
   width: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #030014;
+  background: rgb(var(--page));
 }
 ::-webkit-scrollbar-thumb {
-  background: #a855f7; 
+  background: linear-gradient(#a855f7, #6366f1);
   border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #c084fc;
+}
+
+/* Scrollbar delgada para contenedores internos (modales, chat, terminal) */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.4);
+  border-radius: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(168, 85, 247, 0.7);
+}
+
+/* Marquee de testimonios (loop sin costura, pausa al hover) */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes marquee-reverse {
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0); }
+}
+.animate-marquee { animation: marquee 45s linear infinite; }
+.animate-marquee-reverse { animation: marquee-reverse 45s linear infinite; }
+.marquee-pause:hover .animate-marquee,
+.marquee-pause:hover .animate-marquee-reverse {
+  animation-play-state: paused;
+}
+
+/* Respeta a usuarios que prefieren menos movimiento */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+/* El grano al 20% sobre fondo blanco se ve como ruido de televisión. */
+:root[data-theme="light"] .bg-noise {
+  opacity: var(--noise-opacity);
 }

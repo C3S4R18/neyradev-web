@@ -1,10 +1,57 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/png" href="/mi-foto.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>mi-portafolio</title>
+
+    <!-- SEO -->
+    <title>César Neyra — Ingeniero de Software Full Stack | NeyraDev</title>
+    <meta name="description" content="Ingeniero de Software Full Stack. Desarrollo webs de alto rendimiento (Next.js), apps móviles nativas (Kotlin) y sistemas escalables. Transformo negocios en software inteligente." />
+    <meta name="author" content="César Neyra" />
+    <meta name="keywords" content="Desarrollador Full Stack, Ingeniero de Software, Next.js, React, Kotlin, Android, Supabase, Perú, NeyraDev" />
+    <meta name="theme-color" content="#030014" />
+
+    <!-- Aplica el tema antes del primer pintado: sin esto se ve un destello
+         oscuro al entrar en modo claro. Debe ir en <head> y ser síncrono. -->
+    <script>
+      (function () {
+        try {
+          var saved = localStorage.getItem("neyradev:theme");
+          var theme = saved === "light" || saved === "dark"
+            ? saved
+            : (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+          document.documentElement.dataset.theme = theme;
+          document.querySelector('meta[name="theme-color"]')
+            .setAttribute("content", theme === "light" ? "#f9f9fd" : "#030014");
+        } catch (e) {
+          document.documentElement.dataset.theme = "dark";
+        }
+      })();
+    </script>
+
+    <!-- og:image y canonical necesitan URL absoluta: con ruta relativa,
+         Facebook, LinkedIn y WhatsApp no muestran la tarjeta.
+         Si algún día pones dominio propio, cámbialas aquí. -->
+    <link rel="canonical" href="https://neyradev-web.vercel.app/" />
+
+    <!-- Open Graph (imagen 1200x630, generada por npm run images) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://neyradev-web.vercel.app/" />
+    <meta property="og:site_name" content="NeyraDev" />
+    <meta property="og:locale" content="es_ES" />
+    <meta property="og:title" content="César Neyra — Ingeniero de Software Full Stack" />
+    <meta property="og:description" content="Webs de alto rendimiento, apps móviles nativas y sistemas escalables. Software inteligente para tu negocio." />
+    <meta property="og:image" content="https://neyradev-web.vercel.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="César Neyra, Ingeniero de Software Full Stack" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="César Neyra — Ingeniero de Software Full Stack" />
+    <meta name="twitter:description" content="Webs de alto rendimiento, apps móviles nativas y sistemas escalables." />
+    <meta name="twitter:image" content="https://neyradev-web.vercel.app/og-image.png" />
   </head>
   <body>
     <div id="root"></div>

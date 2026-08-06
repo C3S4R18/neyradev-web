@@ -1,7 +1,16 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { motion, useScroll, useSpring, useMotionValue, useTransform, animate, AnimatePresence } from 'framer-motion';
-import { FaGithub, FaLinkedin, FaWhatsapp, FaInstagram, FaReact, FaAndroid, FaNodeJs, FaRocket, FaExternalLinkAlt, FaBars, FaTimes, FaBoxOpen, FaMobileAlt, FaArrowUp, FaBrain, FaRobot, FaBolt, FaStar, FaLaptopCode, FaCommentDots, FaCheckCircle, FaSearch, FaFilter, FaBuilding, FaChevronLeft, FaChevronRight, FaCode, FaChartLine, FaDatabase, FaServer, FaLayerGroup, FaImages, FaEye, FaPaperPlane, FaUser, FaEnvelope, FaPen, FaRegPaperPlane, FaDownload, FaGamepad, FaMicrochip, FaTerminal, FaSkull, FaLeaf, FaHammer, FaGhost, FaBiohazard, FaBug, FaDragon, FaCheck } from 'react-icons/fa';
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import { motion, useScroll, useSpring, useMotionValue, animate, AnimatePresence } from 'framer-motion';
+import { FaGithub, FaLinkedin, FaWhatsapp, FaInstagram, FaReact, FaAndroid, FaNodeJs, FaRocket, FaExternalLinkAlt, FaBars, FaTimes, FaBoxOpen, FaMobileAlt, FaArrowUp, FaBrain, FaRobot, FaBolt, FaStar, FaLaptopCode, FaCommentDots, FaCheckCircle, FaSearch, FaFilter, FaBuilding, FaChevronLeft, FaChevronRight, FaCode, FaChartLine, FaDatabase, FaServer, FaLayerGroup, FaImages, FaEye, FaPaperPlane, FaUser, FaEnvelope, FaPen, FaRegPaperPlane, FaDownload, FaGamepad, FaMicrochip, FaTerminal, FaSkull, FaLeaf, FaHammer, FaGhost, FaBiohazard, FaBug, FaDragon, FaCheck, FaGlobe, FaChevronDown, FaSun, FaMoon, FaCoins } from 'react-icons/fa';
 import { SiTailwindcss, SiKotlin, SiMysql, SiSupabase, SiPhp, SiVercel, SiNextdotjs, SiTypescript, SiPostgresql, SiFirebase, SiFigma, SiNintendoswitch } from "react-icons/si";
+import { useI18n } from './i18n/context';
+import { HAS_CHOSEN_LANG, LANGUAGES } from './i18n/config';
+import { useTheme } from './theme/context';
+import { useCurrency } from './currency/context';
+import { CURRENCIES, formatPrice } from './currency/config';
+
+// Rellena marcadores tipo {name} en las cadenas traducidas.
+const fill = (template, values) =>
+  Object.entries(values).reduce((acc, [key, value]) => acc.replaceAll(`{${key}}`, value), template);
 
 // --- DATOS ---
 const SOCIAL_LINKS = {
@@ -11,503 +20,363 @@ const SOCIAL_LINKS = {
   whatsapp: "https://wa.me/51947327420"
 };
 
-const SERVICES_DATA = [
-  {
-    icon: <SiPhp />,
-    title: "Backend & Arquitectura",
-    descSimple: "Construyo los cimientos invisibles que hacen que tu aplicación sea segura y rápida.",
-    descTech: "Diseño de APIs RESTful escalables, gestión de bases de datos relacionales y autenticación segura (JWT).",
-    businessValue: "Tus datos estarán seguros y tu sistema no se caerá.",
-    tags: ["PHP", "Node.js", "MySQL"],
-    color: "indigo"
-  },
-  {
-    icon: <FaMobileAlt />,
-    title: "Desarrollo Móvil Nativo",
-    descSimple: "Creo apps que tus clientes pueden descargar en Play Store. Rápidas y funcionan incluso sin internet.",
-    descTech: "Desarrollo Android nativo con Kotlin, Arquitectura MVVM, Room Database para persistencia local y Coroutines.",
-    businessValue: "Presencia directa en el bolsillo de tus clientes.",
-    tags: ["Kotlin", "Android Studio", "Material Design"],
-    color: "fuchsia"
-  },
-  {
-    icon: <SiNextdotjs />,
-    title: "Webs de Alto Rendimiento",
-    descSimple: "Páginas web modernas que cargan al instante y aparecen primero en Google.",
-    descTech: "Desarrollo Frontend con Next.js (SSR/ISR), optimización de Core Web Vitals y diseño responsive con Tailwind CSS.",
-    businessValue: "Mayor visibilidad y conversión de ventas.",
-    tags: ["Next.js", "React", "SEO Avanzado"],
-    color: "cyan"
-  }
+// --- DATOS NO TRADUCIBLES ---
+// Iconos, colores, imágenes, precios y nombres de tecnología viven aquí.
+// Todo el texto visible está en src/i18n/locales/*.js, enlazado por `key`.
+
+// --- ACENTOS DE COLOR ---
+// Clases literales, no plantillas: Tailwind escanea el código y no puede
+// resolver `bg-${color}-500`. Antes esto se cubría con un safelist de ~3000
+// clases; ahora solo existen las que se usan de verdad.
+
+const SERVICE_ACCENT = {
+  indigo: "bg-indigo-500/20 text-indigo-400 shadow-indigo-500/10",
+  fuchsia: "bg-fuchsia-500/20 text-fuchsia-400 shadow-fuchsia-500/10",
+  cyan: "bg-cyan-500/20 text-cyan-400 shadow-cyan-500/10",
+};
+
+const TESTIMONIAL_ACCENT = {
+  cyan: { border: "hover:border-cyan-500/40", glow: "bg-cyan-600/10", quote: "text-cyan-500/40", avatar: "from-cyan-500" },
+  purple: { border: "hover:border-purple-500/40", glow: "bg-purple-600/10", quote: "text-purple-500/40", avatar: "from-purple-500" },
+  fuchsia: { border: "hover:border-fuchsia-500/40", glow: "bg-fuchsia-600/10", quote: "text-fuchsia-500/40", avatar: "from-fuchsia-500" },
+  indigo: { border: "hover:border-indigo-500/40", glow: "bg-indigo-600/10", quote: "text-indigo-500/40", avatar: "from-indigo-500" },
+  blue: { border: "hover:border-blue-500/40", glow: "bg-blue-600/10", quote: "text-blue-500/40", avatar: "from-blue-500" },
+  pink: { border: "hover:border-pink-500/40", glow: "bg-pink-600/10", quote: "text-pink-500/40", avatar: "from-pink-500" },
+};
+
+const PLAN_ACCENT = {
+  cyan: { title: "text-cyan-400", border: "border-cyan-500", badge: "bg-cyan-600", check: "text-cyan-500", grad: "from-cyan-600/10", glow: "bg-cyan-500/20" },
+  blue: { title: "text-blue-400", border: "border-blue-500", badge: "bg-blue-600", check: "text-blue-500", grad: "from-blue-600/10", glow: "bg-blue-500/20" },
+  indigo: { title: "text-indigo-400", border: "border-indigo-500", badge: "bg-indigo-600", check: "text-indigo-500", grad: "from-indigo-600/10", glow: "bg-indigo-500/20" },
+  fuchsia: { title: "text-fuchsia-400", border: "border-fuchsia-500", badge: "bg-fuchsia-600", check: "text-fuchsia-500", grad: "from-fuchsia-600/10", glow: "bg-fuchsia-500/20" },
+  pink: { title: "text-pink-400", border: "border-pink-500", badge: "bg-pink-600", check: "text-pink-500", grad: "from-pink-600/10", glow: "bg-pink-500/20" },
+  purple: { title: "text-purple-400", border: "border-purple-500", badge: "bg-purple-600", check: "text-purple-500", grad: "from-purple-600/10", glow: "bg-purple-500/20" },
+  violet: { title: "text-violet-400", border: "border-violet-500", badge: "bg-violet-600", check: "text-violet-500", grad: "from-violet-600/10", glow: "bg-violet-500/20" },
+};
+
+const SERVICES_META = [
+  { key: "backend", icon: <SiPhp />, tags: ["PHP", "Node.js", "MySQL"], color: "indigo" },
+  { key: "mobile", icon: <FaMobileAlt />, tags: ["Kotlin", "Android Studio", "Material Design"], color: "fuchsia" },
+  { key: "web", icon: <SiNextdotjs />, tags: ["Next.js", "React", "SEO"], color: "cyan" },
 ];
 
-// --- NUEVOS DATOS: PLANES DE INVERSIÓN DINÁMICOS CON SUB-NIVELES ---
-const PRICING_DATA = [
+const PRICING_META = [
   {
-    id: "web",
-    title: "Web Moderna",
-    subtitle: "Presencia Digital",
-    price: "600", 
-    description: "Ideal para negocios que buscan captar clientes y tener una vitrina profesional 24/7.",
-    features: [
-      "Diseño UI/UX Personalizado",
-      "Desarrollo ultrarrápido (Next.js)",
-      "Optimización SEO para Google",
-      "Panel Autoadministrable básico",
-      "Diseño 100% Responsivo (Celular/PC)"
-    ],
+    key: "web",
+    price: "600",
     color: "cyan",
     popular: false,
-    actionText: "Ver Opciones Web",
     tiers: [
-      {
-        title: "Informativa", subtitle: "Landing Page Escencial", price: "600",
-        description: "Perfecta para presentar tus servicios, captar leads y tener presencia oficial.",
-        features: ["Diseño One-Page moderno", "Formulario de contacto", "Botón directo a WhatsApp", "SEO Básico inicial", "Adaptable a Celulares"],
-        color: "cyan", popular: false, whatsappMsg: "Hola NeyraDev, me interesa cotizar una Web Informativa (Desde S/600)."
-      },
-      {
-        title: "Web Dinámica", subtitle: "Autoadministrable", price: "1200",
-        description: "Web con varias secciones y panel administrador para gestionar tu contenido.",
-        features: ["Múltiples vistas (Inicio, Nostros...)", "Panel de Administrador seguro", "Base de Datos", "Gestión de Blog o Portafolio", "Dashboard básico de métricas"],
-        color: "blue", popular: true, whatsappMsg: "Hola NeyraDev, me interesa cotizar una Web Dinámica con Panel (Desde S/1200)."
-      },
-      {
-        title: "E-Commerce", subtitle: "Tienda Virtual Completa", price: "2500",
-        description: "Vende en línea 24/7 con carrito de compras y pasarela de pagos.",
-        features: ["Pasarela de pagos (Tarjetas/Yape)", "Carrito de compras dinámico", "Gestión de inventario y pedidos", "Perfiles de clientes", "Buscador avanzado y filtros"],
-        color: "indigo", popular: false, whatsappMsg: "Hola NeyraDev, me interesa cotizar un E-Commerce / Tienda Virtual (Desde S/2500)."
-      }
-    ]
+      { key: "webInfo", price: "600", color: "cyan", popular: false },
+      { key: "webDyn", price: "1200", color: "blue", popular: true },
+      { key: "webShop", price: "2500", color: "indigo", popular: false },
+    ],
   },
   {
-    id: "app",
-    title: "App Móvil Nativa",
-    subtitle: "La experiencia definitiva",
+    key: "app",
     price: "800",
-    description: "Aplicación Android fluida y robusta, lista para publicarse en la Google Play Store.",
-    features: [
-      "Desarrollo Nativo (Kotlin)",
-      "Arquitectura de alto rendimiento",
-      "Funcionamiento Offline (Sin internet)",
-      "Notificaciones Push",
-      "Subida a Google Play Store"
-    ],
     color: "fuchsia",
-    popular: false, 
-    actionText: "Ver Opciones Móviles",
+    popular: false,
     tiers: [
-      {
-        title: "App Básica", subtitle: "Catálogo / Herramienta", price: "800",
-        description: "Ideal para mostrar catálogos, noticias o herramientas útiles sin requerir login.",
-        features: ["Desarrollo Nativo (Kotlin)", "Consumo de API", "Modo Offline Básico", "Animaciones fluidas", "UI/UX intuitiva"],
-        color: "pink", popular: false, whatsappMsg: "Hola NeyraDev, me interesa cotizar una App Básica (Desde S/800)."
-      },
-      {
-        title: "App Interactiva", subtitle: "Gestión y Usuarios", price: "1800",
-        description: "App con registro de usuarios, interacción en tiempo real y perfiles.",
-        features: ["Autenticación segura (Google/Email)", "Base de datos en la nube", "Subida de imágenes/archivos", "Notificaciones Push", "Panel de configuración"],
-        color: "fuchsia", popular: true, whatsappMsg: "Hola NeyraDev, me interesa cotizar una App Interactiva con Usuarios (Desde S/1800)."
-      },
-      {
-        title: "App Compleja", subtitle: "Geolocalización / E-commerce", price: "3500",
-        description: "Aplicaciones avanzadas con mapas, tracking o pasarelas de pago integradas.",
-        features: ["GPS y Mapas en vivo", "Integración de Pagos Móviles", "Arquitectura escalable MVVM", "Múltiples tipos de usuarios", "Soporte y subida a Play Store"],
-        color: "purple", popular: false, whatsappMsg: "Hola NeyraDev, me interesa cotizar una App Compleja/Avanzada (Desde S/3500)."
-      }
-    ]
+      { key: "appBasic", price: "800", color: "pink", popular: false },
+      { key: "appInter", price: "1800", color: "fuchsia", popular: true },
+      { key: "appComplex", price: "3500", color: "purple", popular: false },
+    ],
   },
   {
-    id: "fullstack",
-    title: "Sistema Full Stack",
-    subtitle: "Solución Empresarial",
+    key: "fullstack",
     price: "1500",
-    description: "Ecosistema digital completo. App Móvil conectada a un Panel Web en tiempo real.",
-    features: [
-      "Todo lo del Plan Web + App Móvil",
-      "Base de Datos Cloud (Supabase)",
-      "Sincronización Real-Time",
-      "Autenticación Avanzada de Usuarios",
-      "Arquitectura Escalable"
-    ],
     color: "purple",
     popular: true,
-    actionText: "Ver Opciones Full Stack",
     tiers: [
-      {
-        title: "Plan Inicial", subtitle: "App + Web Administrativa", price: "1500",
-        description: "Un panel web para el administrador y una aplicación móvil para los usuarios.",
-        features: ["App Android Nativa", "Panel Web en Next.js", "Base de Datos Centralizada", "Gestión de roles simple", "Despliegue inicial"],
-        color: "violet", popular: false, whatsappMsg: "Hola NeyraDev, me interesa el Sistema Full Stack Inicial (Desde S/1500)."
-      },
-      {
-        title: "Plan Profesional", subtitle: "Sincronización Total", price: "3000",
-        description: "Ecosistema robusto con interacción en tiempo real entre todas las plataformas.",
-        features: ["Sincronización Real-Time completa", "Roles y Permisos avanzados", "Reportes y Gráficos Web", "Notificaciones Multi-plataforma", "Soporte Técnico extendido"],
-        color: "purple", popular: true, whatsappMsg: "Hola NeyraDev, me interesa el Sistema Full Stack Profesional (Desde S/3000)."
-      },
-      {
-        title: "Plan Enterprise", subtitle: "Escalabilidad a Medida", price: "5500",
-        description: "Arquitectura compleja para startups, software corporativo o sistemas de alta demanda.",
-        features: ["Múltiples Apps (Ej. Cliente/Repartidor)", "APIs Personalizadas (Node.js/PHP)", "Integración de facturación/pagos", "Infraestructura Cloud Segura", "Mantenimiento Continuo"],
-        color: "indigo", popular: false, whatsappMsg: "Hola NeyraDev, busco una Solución Enterprise Full Stack a medida (Desde S/5500)."
-      }
-    ]
-  }
+      { key: "fsStart", price: "1500", color: "violet", popular: false },
+      { key: "fsPro", price: "3000", color: "purple", popular: true },
+      { key: "fsEnterprise", price: "5500", color: "indigo", popular: false },
+    ],
+  },
 ];
 
-const FILTERS = ["Todos", "Empresarial", "Full Stack", "Web", "Móvil"];
+// Claves de filtro: el texto visible sale de t.projects.filters[clave].
+const FILTERS = ["todos", "empresarial", "fullstack", "web", "movil"];
 
-const PROJECTS_DATA = [
+const PROJECTS_META = [
   {
-    id: 0,
+    key: "ruag",
     title: "Ruag",
-    subtitle: "Web App de Gestión Agroindustrial",
-    category: "Empresarial",
-    badge: "EMPRESA ACTUAL",
+    category: "empresarial",
+    badge: "current",
     link: "https://ruag-app-web.vercel.app/",
     gallery: [
-      "/img-proyectos/ruag-logo.png",
-      "/img-proyectos/ruag-login.png", 
-      "/img-proyectos/ruag-dashboard.png",
-      "/img-proyectos/ruag-movil1.jpeg",
-      "/img-proyectos/ruag-movil2.jpeg"
+      "/img-proyectos/ruag-logo.webp",
+      "/img-proyectos/ruag-login.webp",
+      "/img-proyectos/ruag-dashboard.webp",
+      "/img-proyectos/ruag-movil1.webp",
+      "/img-proyectos/ruag-movil2.webp",
     ],
-    business: {
-      problem: "La empresa necesitaba controlar la producción en campo y oficina simultáneamente, eliminando el uso de papel y errores humanos.",
-      solution: "Una plataforma centralizada donde la web administrativa y las apps de los operarios se sincronizan al instante.",
-      impact: "Reducción del 40% en tiempos administrativos y control total del inventario en tiempo real."
-    },
-    tech: {
-      architecture: "Monorepo con Frontend en Next.js y Backend Services.",
-      stack: ["Next.js 14 (App Router)", "TypeScript", "Vercel Edge Functions", "SWR"],
-      challenges: "Sincronización de datos masivos en tiempo real y manejo de estados complejos en formularios dinámicos.",
-      highlight: "Implementación de Server Side Rendering para reportes instantáneos."
-    },
-    techStackIcons: [<SiNextdotjs/>, <SiTypescript/>, <SiVercel/>, <SiTailwindcss/>],
+    stack: ["Next.js 14 (App Router)", "TypeScript", "Vercel Edge Functions", "SWR"],
+    techStackIcons: [<SiNextdotjs key="next" />, <SiTypescript key="ts" />, <SiVercel key="vercel" />, <SiTailwindcss key="tw" />],
     gradient: "from-blue-900 to-slate-900",
-    icon: <FaBuilding className="text-6xl text-white relative z-10 drop-shadow-lg" />
+    icon: <FaBuilding className="text-6xl text-white relative z-10 drop-shadow-lg" />,
   },
   {
-    id: 1,
+    key: "jormard",
     title: "Bodega Jormard",
-    subtitle: "Ecosistema de Inventario Real-Time",
-    category: "Full Stack",
-    badge: "CASO DE ÉXITO",
+    category: "fullstack",
+    badge: "success",
+    link: "#",
     gallery: [
-      "/img-proyectos/logo-jormard.jpg",
-      "/img-proyectos/jormard-DashAdmin.png",
-      "/img-proyectos/jormard-DashCliente.png",
-      "/img-proyectos/jormar-movil.jpeg"
+      "/img-proyectos/logo-jormard.webp",
+      "/img-proyectos/jormard-DashAdmin.webp",
+      "/img-proyectos/jormard-DashCliente.webp",
+      "/img-proyectos/jormar-movil.webp",
     ],
-    business: {
-      problem: "El dueño sufría de 'robo hormiga' y no sabía cuánto stock tenía hasta hacer inventario manual cada mes.",
-      solution: "Un sistema que descuenta el stock automáticamente con cada venta. El dueño puede ver las ventas desde su celular en vivo.",
-      impact: "Eliminación de pérdidas por robo y automatización del 100% del cuadre de caja."
-    },
-    tech: {
-      architecture: "Arquitectura Serverless con Supabase (Backend as a Service).",
-      stack: ["Next.js", "Supabase Auth & DB", "PostgreSQL", "Android (Kotlin)"],
-      challenges: "Conectar una App nativa Android con una Web React compartiendo la misma base de datos en tiempo real.",
-      highlight: "Uso de Supabase Realtime Subscriptions para actualizar el stock sin recargar la página."
-    },
-    techStackIcons: [<SiSupabase/>, <SiPostgresql/>, <SiNextdotjs/>, <SiKotlin/>],
+    stack: ["Next.js", "Supabase Auth & DB", "PostgreSQL", "Android (Kotlin)"],
+    techStackIcons: [<SiSupabase key="supa" />, <SiPostgresql key="pg" />, <SiNextdotjs key="next" />, <SiKotlin key="kt" />],
     gradient: "from-green-900 to-emerald-900",
-    icon: <SiSupabase className="text-6xl text-white relative z-10 drop-shadow-lg" />
+    icon: <SiSupabase className="text-6xl text-white relative z-10 drop-shadow-lg" />,
   },
   {
-    id: 2,
+    key: "aldia",
     title: "Aldia Express",
-    subtitle: "Plataforma Logística",
-    category: "Web",
-    gallery: [
-      "/img-proyectos/ADE-Logo.png",
-      "/img-proyectos/ADE-DashAdmin.png",
-      "/img-proyectos/ADE-DashCliente.png"
-    ],
-    business: {
-      problem: "La gestión de paquetes y rutas de entrega se hacía en Excel, causando retrasos y paquetes perdidos.",
-      solution: "Un panel administrativo robusto para asignar rutas, rastrear estados y generar guías de remisión.",
-      impact: "Optimización de rutas de entrega y trazabilidad completa del paquete."
-    },
-    tech: {
-      architecture: "MVC (Modelo-Vista-Controlador) Monolítico.",
-      stack: ["PHP 8", "MySQL", "Bootstrap 5", "JQuery"],
-      challenges: "Gestión eficiente de miles de registros en MySQL y generación de PDFs dinámicos.",
-      highlight: "Consultas SQL optimizadas e índices para reportes rápidos."
-    },
-    techStackIcons: [<SiPhp/>, <SiMysql/>, <FaServer/>],
+    category: "web",
+    badge: null,
+    link: "#",
+    gallery: ["/img-proyectos/ADE-Logo.webp", "/img-proyectos/ADE-DashAdmin.webp", "/img-proyectos/ADE-DashCliente.webp"],
+    stack: ["PHP 8", "MySQL", "Bootstrap 5", "JQuery"],
+    techStackIcons: [<SiPhp key="php" />, <SiMysql key="sql" />, <FaServer key="srv" />],
     gradient: "from-orange-900 to-red-900",
-    icon: <FaBoxOpen className="text-6xl text-white relative z-10 drop-shadow-lg" />
+    icon: <FaBoxOpen className="text-6xl text-white relative z-10 drop-shadow-lg" />,
   },
   {
-    id: 3,
+    key: "esaf",
     title: "App Móvil ESAF",
-    subtitle: "Educación Financiera Android",
-    category: "Móvil",
+    category: "movil",
+    badge: null,
+    link: "#",
     gallery: [
-      "/img-proyectos/Esaf-logo.png",
-      "/img-proyectos/Esaf-movil-1.jpeg",
-      "/img-proyectos/Esaf-movil-2.jpeg",
-      "/img-proyectos/Esaf-movil-3.jpeg"
+      "/img-proyectos/Esaf-logo.webp",
+      "/img-proyectos/Esaf-movil-1.webp",
+      "/img-proyectos/Esaf-movil-2.webp",
+      "/img-proyectos/Esaf-movil-3.webp",
     ],
-    business: {
-      problem: "Necesidad de una herramienta accesible para usuarios con poca conectividad.",
-      solution: "Una aplicación Android nativa, ligera y capaz de funcionar sin internet.",
-      impact: "Alta retención de usuarios gracias a una experiencia fluida y diseño intuitivo."
-    },
-    tech: {
-      architecture: "MVVM (Model-View-ViewModel) Clean Architecture.",
-      stack: ["Kotlin", "Room Database", "Retrofit", "Coroutines"],
-      challenges: "Implementación de 'Offline-First': sincronizar datos cuando vuelve la conexión.",
-      highlight: "Uso de LiveData y ViewBinding para una UI reactiva y segura."
-    },
-    techStackIcons: [<SiKotlin/>, <FaAndroid/>, <FaDatabase/>],
+    stack: ["Kotlin", "Room Database", "Retrofit", "Coroutines"],
+    techStackIcons: [<SiKotlin key="kt" />, <FaAndroid key="android" />, <FaDatabase key="db" />],
     gradient: "from-purple-900 to-indigo-900",
-    icon: <FaMobileAlt className="text-6xl text-white relative z-10 drop-shadow-lg" />
+    icon: <FaMobileAlt className="text-6xl text-white relative z-10 drop-shadow-lg" />,
   },
   {
-    id: 4,
+    key: "cinnamo",
     title: "CinnamoDiary",
-    subtitle: "App Móvil de Diario Personal",
-    category: "Móvil",
-    badge: "PROYECTO PERSONAL",
+    category: "movil",
+    badge: "personal",
     link: "#",
     gallery: [
-      "/img-proyectos/cinnamo-1.png",
-      "/img-proyectos/cinnamo-2.jpeg",
-      "/img-proyectos/cinnamo-3.jpeg",
-      "/img-proyectos/cinnamo-4.jpeg",
-      "/img-proyectos/cinnamo-5.jpeg",
-      "/img-proyectos/cinnamo-6.jpeg",
-      "/img-proyectos/cinnamo-7.jpeg",
-      "/img-proyectos/cinnamo-8.jpeg"
+      "/img-proyectos/cinnamo-1.webp",
+      "/img-proyectos/cinnamo-2.webp",
+      "/img-proyectos/cinnamo-3.webp",
+      "/img-proyectos/cinnamo-4.webp",
+      "/img-proyectos/cinnamo-5.webp",
+      "/img-proyectos/cinnamo-6.webp",
+      "/img-proyectos/cinnamo-7.webp",
+      "/img-proyectos/cinnamo-8.webp",
     ],
-    business: {
-      problem: "Falta de una plataforma privada y estéticamente atractiva para el registro emocional y recuerdos diarios.",
-      solution: "Aplicación móvil altamente estética e intuitiva con herramientas de seguimiento de estado de ánimo.",
-      impact: "Mejora en el hábito de escritura de los usuarios gracias a una interfaz amigable y relajante."
-    },
-    tech: {
-      architecture: "Clean Architecture MVVM enfocado en UI/UX interactivo.",
-      stack: ["Kotlin", "Supabase", "Material You", "Coroutines"],
-      challenges: "Implementación de temas dinámicos y animaciones fluidas manteniendo el alto rendimiento.",
-      highlight: "Diseño 100% personalizado con persistencia de datos local ultra rápida."
-    },
-    techStackIcons: [<SiKotlin/>, <FaAndroid/>, <FaDatabase/>],
+    stack: ["Kotlin", "Supabase", "Material You", "Coroutines"],
+    techStackIcons: [<SiKotlin key="kt" />, <FaAndroid key="android" />, <FaDatabase key="db" />],
     gradient: "from-pink-900 to-purple-900",
-    icon: <FaMobileAlt className="text-6xl text-white relative z-10 drop-shadow-lg" />
+    icon: <FaMobileAlt className="text-6xl text-white relative z-10 drop-shadow-lg" />,
   },
   {
-    id: 5,
+    key: "led",
     title: "Letrero LED Pro",
-    subtitle: "Señalización Digital Móvil",
-    category: "Móvil",
+    category: "movil",
+    badge: null,
     link: "#",
-    gallery: [
-      "/img-proyectos/led-1.png",
-      "/img-proyectos/led-2.jpeg",
-      "/img-proyectos/led-3.jpeg",
-      "/img-proyectos/led-4.jpeg"
-    ],
-    business: {
-      problem: "Los usuarios requerían una forma rápida de transmitir mensajes a distancia en entornos ruidosos o eventos masivos.",
-      solution: "Aplicación que convierte la pantalla de cualquier dispositivo en un letrero LED programable y dinámico.",
-      impact: "Facilita la comunicación visual instantánea en conciertos, aeropuertos y vitrinas comerciales."
-    },
-    tech: {
-      architecture: "Arquitectura nativa enfocada en rendimiento de renderizado gráfico.",
-      stack: ["Kotlin", "Canvas API", "Android Studio", "Custom Views"],
-      challenges: "Mantener 60fps constantes mientras se dibujan y mueven cientos de píxeles LED simulados en pantalla.",
-      highlight: "Uso avanzado del Canvas de Android para animaciones de texto fluidas."
-    },
-    techStackIcons: [<SiKotlin/>, <FaAndroid/>, <FaLaptopCode/>],
+    gallery: ["/img-proyectos/led-1.webp", "/img-proyectos/led-2.webp", "/img-proyectos/led-3.webp", "/img-proyectos/led-4.webp"],
+    stack: ["Kotlin", "Canvas API", "Android Studio", "Custom Views"],
+    techStackIcons: [<SiKotlin key="kt" />, <FaAndroid key="android" />, <FaLaptopCode key="code" />],
     gradient: "from-red-900 to-yellow-900",
-    icon: <FaBolt className="text-6xl text-white relative z-10 drop-shadow-lg" />
+    icon: <FaBolt className="text-6xl text-white relative z-10 drop-shadow-lg" />,
   },
   {
-    id: 6,
+    key: "spin",
     title: "SpinLoryx",
-    subtitle: "Gamificación & Entretenimiento",
-    category: "Móvil",
+    category: "movil",
+    badge: null,
     link: "#",
     gallery: [
-      "/img-proyectos/spin-1.png",
-      "/img-proyectos/spin-2.jpeg",
-      "/img-proyectos/spin-3.jpeg",
-      "/img-proyectos/spin-4.jpeg",
-      "/img-proyectos/spin-5.jpeg"
+      "/img-proyectos/spin-1.webp",
+      "/img-proyectos/spin-2.webp",
+      "/img-proyectos/spin-3.webp",
+      "/img-proyectos/spin-4.webp",
+      "/img-proyectos/spin-5.webp",
     ],
-    business: {
-      problem: "Necesidad de una herramienta digital, interactiva y personalizable para la toma de decisiones al azar.",
-      solution: "Aplicación de ruletas personalizables con mecánicas de juego realistas, ideal para sorteos y dinámicas grupales.",
-      impact: "Aumento en la retención de usuarios debido a la excelente respuesta táctil y diversión visual."
-    },
-    tech: {
-      architecture: "Arquitectura orientada a eventos para el control físico de animaciones.",
-      stack: ["Kotlin", "Android Animation Framework", "UX/UI Design"],
-      challenges: "Calcular matemáticamente la fricción, peso y desaceleración para asegurar que la ruleta sea 100% aleatoria.",
-      highlight: "Integración de físicas realistas y feedback háptico inmersivo."
-    },
-    techStackIcons: [<SiKotlin/>, <FaAndroid/>, <FaGamepad/>],
+    stack: ["Kotlin", "Android Animation Framework", "UX/UI Design"],
+    techStackIcons: [<SiKotlin key="kt" />, <FaAndroid key="android" />, <FaGamepad key="game" />],
     gradient: "from-blue-900 to-purple-900",
-    icon: <FaStar className="text-6xl text-white relative z-10 drop-shadow-lg" />
+    icon: <FaStar className="text-6xl text-white relative z-10 drop-shadow-lg" />,
   },
   {
-    id: 7,
-    title: "Ruag Asistencias",
-    subtitle: "Control de Personal Web y App",
-    category: "Full Stack",
-    badge: "SISTEMA CORPORATIVO",
-    link: "https://ruag-app-web.vercel.app/",
-    gallery: [
-      "/img-proyectos/ruag-asis-1.png",
-      "/img-proyectos/ruag-asis-2.jpeg",
-      "/img-proyectos/ruag-asis-3.jpeg",
-      "/img-proyectos/ruag-asis-4.jpeg",
-      "/img-proyectos/ruag-asis-5.jpeg"
-    ],
-    business: {
-      problem: "El registro de horas del personal en campo era vulnerable a manipulaciones y desajustes al no validar ubicación real.",
-      solution: "Sistema de control de asistencia dual: App móvil con validación GPS y un panel Web para Recursos Humanos.",
-      impact: "Automatización total de la nómina y eliminación del fraude en las marcaciones."
-    },
-    tech: {
-      architecture: "Arquitectura Cliente-Servidor Híbrida con Sincronización Real-Time.",
-      stack: ["Next.js", "TypeScript", "Kotlin", "GPS API", "Supabase"],
-      challenges: "Permitir marcaciones en zonas sin internet (Offline-first) y sincronizar automáticamente al recuperar la señal.",
-      highlight: "Geofencing avanzado para validar que el trabajador esté dentro del área permitida."
-    },
-    techStackIcons: [<SiNextdotjs/>, <SiKotlin/>, <FaAndroid/>, <SiSupabase/>],
-    gradient: "from-teal-900 to-green-900",
-    icon: <FaCheckCircle className="text-6xl text-white relative z-10 drop-shadow-lg" />
+    key: "jornada",
+    title: "Ruag Jornada",
+    category: "fullstack",
+    badge: "corporate",
+    link: "#",
+    gallery: [], // TODO (César): /img-proyectos/jornada-*.png
+    stack: ["Next.js", "TypeScript", "Supabase", "PostgreSQL"],
+    techStackIcons: [<SiNextdotjs key="next" />, <SiTypescript key="ts" />, <SiSupabase key="supa" />, <SiPostgresql key="pg" />],
+    gradient: "from-sky-900 to-blue-900",
+    icon: <FaCheckCircle className="text-6xl text-white relative z-10 drop-shadow-lg" />,
   },
   {
-    id: 8,
-    title: "RUAG CV",
-    subtitle: "Plataforma de CVs con IA",
-    category: "Full Stack",
-    badge: "INNOVACIÓN IA",
+    key: "ssoma",
+    title: "Ruag SSOMA Files",
+    category: "web",
+    badge: "corporate",
     link: "#",
     gallery: [
-      "/img-proyectos/cv-ia-1.png",
-      "/img-proyectos/cv-ia-2.png",
-      "/img-proyectos/cv-ia-3.png",
-      "/img-proyectos/cv-ia-4.png",
-      "/img-proyectos/cv-ia-5.png",
-      "/img-proyectos/cv-ia-6.jpeg",
-      "/img-proyectos/cv-ia-7.jpeg",
-      "/img-proyectos/cv-ia-8.jpeg",
-      "/img-proyectos/cv-ia-9.jpeg"
-    ],
-    business: {
-      problem: "El departamento de RRHH recibía currículums con formatos desordenados e información inconsistente, dificultando la selección de personal.",
-      solution: "Una plataforma impulsada por Inteligencia Artificial que extrae la información de cualquier CV antiguo y la estandariza en un diseño corporativo unificado.",
-      impact: "Reducción drástica del tiempo de filtrado de candidatos y estandarización visual al 100% para el equipo de reclutamiento."
-    },
-    tech: {
-      architecture: "Arquitectura Serverless Full Stack integrada con Modelos de Lenguaje (LLM).",
-      stack: ["Next.js", "OpenAI API", "Kotlin", "Tailwind CSS"],
-      challenges: "Procesar prompts complejos en el backend para extraer datos estructurados (JSON) a partir de PDFs no estructurados.",
-      highlight: "Generación de plantillas PDF dinámicas en el cliente y sugerencias predictivas de IA."
-    },
-    techStackIcons: [<FaRobot/>, <SiNextdotjs/>, <SiKotlin/>, <FaAndroid/>],
-    gradient: "from-indigo-900 to-blue-900",
-    icon: <FaRobot className="text-6xl text-white relative z-10 drop-shadow-lg" />
-  }
+      "/img-proyectos/Banner-SsomaFiles.webp",
+    ], // TODO (César): /img-proyectos/ssoma-*.png
+    stack: ["Next.js", "TypeScript", "Supabase Storage", "Tailwind CSS"],
+    techStackIcons: [<SiNextdotjs key="next" />, <SiTypescript key="ts" />, <SiSupabase key="supa" />, <SiTailwindcss key="tw" />],
+    gradient: "from-emerald-900 to-teal-900",
+    icon: <FaLayerGroup className="text-6xl text-white relative z-10 drop-shadow-lg" />,
+  },
+  {
+    key: "cubo",
+    title: "El Cubo",
+    ruag: true, // parte del ecosistema Ruag
+    category: "fullstack",
+    badge: "wip",
+    link: "#",
+    gallery: [], // TODO (César): /img-proyectos/cubo-*.png
+    stack: ["Next.js", "TypeScript", "Supabase"],
+    techStackIcons: [<SiNextdotjs key="next" />, <SiTypescript key="ts" />, <SiSupabase key="supa" />],
+    gradient: "from-fuchsia-900 to-purple-900",
+    icon: <FaBoxOpen className="text-6xl text-white relative z-10 drop-shadow-lg" />,
+  },
 ];
 
-// --- NUEVO COMPONENTE: SPLASH SCREEN MODERNO (CÓDIGO/CONSOLA) ---
-const SplashScreen = ({ onComplete }) => {
-  const [logs, setLogs] = useState([]);
-  const [progress, setProgress] = useState(0);
+// Las reseñas de abajo son TEXTO DE MUESTRA, no opiniones reales: llevan nombre,
+// cargo y empresa que suenan verificables. Publicarlas como si fueran reales es
+// un riesgo de reputación (y en España, publicidad engañosa), así que la sección
+// queda apagada.
+//
+// Para encenderla: consigue reseñas reales, cámbialas en los 9 archivos de
+// src/i18n/locales/ (clave `testimonials.items`) y pon esto en true.
+const SHOW_TESTIMONIALS = false;
 
-  const bootSequence = [
-    "INITIALIZING NEYRADEV OS v2.0.0...",
-    "Resolving dependencies: [React, Next.js, Tailwind]...",
-    "Compiling mobile architecture: [Kotlin, Android]...",
-    "Connecting to backend databases... [OK]",
-    "Bypassing UI security protocols... [SUCCESS]",
-    "Loading holographic modules...",
-    "System Integrity Verified. ACCESS GRANTED."
-  ];
+const TESTIMONIALS_META = [
+  { key: "jorge", name: "Jorge Ramírez", initials: "JR", rating: 5, color: "cyan" },
+  { key: "maria", name: "María Delgado", initials: "MD", rating: 5, color: "purple" },
+  { key: "luis", name: "Luis Ferrer", initials: "LF", rating: 5, color: "fuchsia" },
+  { key: "ana", name: "Ana Torres", initials: "AT", rating: 5, color: "indigo" },
+  { key: "diego", name: "Diego Salas", initials: "DS", rating: 5, color: "blue" },
+  { key: "carla", name: "Carla Mendoza", initials: "CM", rating: 5, color: "pink" },
+];
+
+const TIMELINE_META = [
+  { key: "ruag", active: true },
+  { key: "freelance", active: false },
+  { key: "backend", active: false },
+];
+
+// --- PANTALLA DE ENTRADA ---
+//
+// La anterior era una consola falsa de 3,3 s ("Bypassing UI security
+// protocols... [SUCCESS]") que se veía en cada visita. Tres problemas: retrasa
+// el contenido en la métrica que Google mide, el tono de hacker no encaja con
+// vender software a empresas, y repetirla en cada carga cansa.
+//
+// Esta dura 1,3 s, sale una vez por sesión, sigue el tema claro/oscuro y se
+// salta entera si el visitante pidió menos animación.
+const SPLASH_SESSION_KEY = "neyradev:splash-shown";
+
+const prefersReducedMotion = () =>
+  typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+const splashAlreadyShown = () => {
+  try {
+    return sessionStorage.getItem(SPLASH_SESSION_KEY) === "1";
+  } catch {
+    return false;
+  }
+};
+
+const markSplashShown = () => {
+  try {
+    sessionStorage.setItem(SPLASH_SESSION_KEY, "1");
+  } catch {
+    // Sin sessionStorage se volverá a ver; no es grave.
+  }
+};
+
+// Se decide al cargar el módulo, fuera del render.
+const SHOULD_SHOW_SPLASH = !splashAlreadyShown() && !prefersReducedMotion();
+
+const SplashScreen = ({ onComplete }) => {
+  const { t } = useI18n();
+  const [leaving, setLeaving] = useState(false);
 
   useEffect(() => {
-    let currentStep = 0;
-    const interval = setInterval(() => {
-      if (currentStep < bootSequence.length) {
-        setLogs(prev => [...prev, bootSequence[currentStep]]);
-        setProgress(Math.floor(((currentStep + 1) / bootSequence.length) * 100));
-        currentStep++;
-      } else {
-        clearInterval(interval);
-        setTimeout(onComplete, 800);
-      }
-    }, 350); 
-
-    return () => clearInterval(interval);
+    markSplashShown();
+    // El desmontaje lo manda el temporizador, no el final de una animación:
+    // si la animación no corre, la pantalla se quita igual.
+    const fade = setTimeout(() => setLeaving(true), 950);
+    const done = setTimeout(onComplete, 1450);
+    return () => {
+      clearTimeout(fade);
+      clearTimeout(done);
+    };
   }, [onComplete]);
 
   return (
-    <motion.div
-      initial={{ opacity: 1 }}
-      exit={{ opacity: 0, y: "-100%" }} 
-      transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
-      className="fixed inset-0 z-[99999] bg-[#030014] flex flex-col items-center justify-center p-8 font-mono overflow-hidden"
+    <div
+      aria-hidden="true"
+      className={`fixed inset-0 z-[99999] bg-page flex flex-col items-center justify-center px-6 transition-opacity duration-500 ${
+        leaving ? "opacity-0" : "opacity-100"
+      }`}
     >
-      <div className="absolute inset-0 opacity-20 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] pointer-events-none"></div>
-      <div className="absolute top-1/4 -left-20 w-96 h-96 bg-cyan-900/30 rounded-full blur-[120px] pointer-events-none"></div>
-      <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-purple-900/30 rounded-full blur-[120px] pointer-events-none"></div>
+      <div className="absolute inset-0 bg-grid opacity-50 pointer-events-none"></div>
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[28rem] h-[28rem] bg-purple-600/20 rounded-full blur-[130px] pointer-events-none"></div>
 
-      <div className="w-full max-w-2xl relative z-10 flex flex-col h-full justify-center">
-        
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col items-center mb-10"
-        >
-          <FaTerminal className="text-6xl text-cyan-400 mb-4 animate-pulse drop-shadow-[0_0_15px_rgba(34,211,238,0.6)]" />
-          <h1 className="text-3xl md:text-5xl text-white font-black tracking-[0.2em] flex items-center gap-2">
-            NEYRA<span className="text-cyan-400">DEV</span><span className="text-gray-600 animate-pulse">_</span>
-          </h1>
-        </motion.div>
-
-        <div className="flex-grow max-h-[250px] overflow-hidden flex flex-col justify-end mb-8 space-y-3 text-xs md:text-sm">
-          {logs.map((log, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className={index === bootSequence.length - 1 ? "text-cyan-400 font-bold" : "text-gray-400"}
-            >
-              <span className="text-purple-500 font-bold mr-3">{">"}</span> 
-              {log}
-            </motion.div>
-          ))}
-          {progress < 100 && (
-             <div className="animate-pulse text-purple-500 font-bold ml-1">_</div>
-          )}
+      <div className="relative z-10 flex flex-col items-center">
+        {/* Retrato con anillo que se dibuja */}
+        <div className="relative w-28 h-28 splash-pop">
+          <svg viewBox="0 0 120 120" className="absolute inset-0 w-full h-full -rotate-90">
+            <circle cx="60" cy="60" r="56" fill="none" stroke="rgb(var(--veil) / 0.12)" strokeWidth="3" />
+            <circle
+              cx="60" cy="60" r="56" fill="none" strokeWidth="3" strokeLinecap="round"
+              stroke="url(#splashRing)" className="splash-ring"
+            />
+            <defs>
+              <linearGradient id="splashRing" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#a855f7" />
+                <stop offset="100%" stopColor="#22d3ee" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <img
+            src="/mi-foto.png"
+            alt=""
+            className="absolute inset-[10px] w-[calc(100%-20px)] h-[calc(100%-20px)] rounded-full object-cover"
+          />
         </div>
 
-        <div className="w-full bg-gray-900/80 h-1.5 rounded-full overflow-hidden relative border border-white/5">
-           <motion.div
-             className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-purple-600 via-cyan-500 to-cyan-300"
-             initial={{ width: "0%" }}
-             animate={{ width: `${progress}%` }}
-             transition={{ duration: 0.3 }}
-           >
-             <div className="absolute top-0 right-0 bottom-0 w-2 bg-white shadow-[0_0_10px_white]"></div>
-           </motion.div>
-        </div>
-        <div className="flex justify-between items-center mt-3 text-[10px] text-gray-500 tracking-widest">
-            <span>SYS_BOOT</span>
-            <span className={progress === 100 ? "text-cyan-400" : ""}>{progress}%</span>
+        <h1 className="mt-7 text-3xl md:text-4xl font-black tracking-[0.25em] text-ink splash-rise">
+          NEYRA<span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">DEV</span>
+        </h1>
+
+        <p className="mt-2 text-xs md:text-sm uppercase tracking-[0.3em] text-ink-soft splash-rise splash-rise-delay">
+          {t.hero.roles[0]}
+        </p>
+
+        <div className="mt-8 w-40 h-px bg-veil/15 overflow-hidden rounded-full">
+          <div className="h-full w-full bg-gradient-to-r from-purple-500 to-cyan-400 splash-bar"></div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
-
 
 // --- COMPONENTES UI ---
 
@@ -525,11 +394,11 @@ const CustomCursor = () => {
     };
     window.addEventListener("mousemove", moveCursor);
     return () => window.removeEventListener("mousemove", moveCursor);
-  }, []);
+  }, [cursorX, cursorY]);
   
   return (
     <motion.div
-      className="fixed top-0 left-0 w-8 h-8 border-2 border-purple-500 rounded-full pointer-events-none z-[9999] hidden md:block mix-blend-difference"
+      className="cursor-ring fixed top-0 left-0 w-8 h-8 border-2 border-purple-500 rounded-full pointer-events-none z-[9999] hidden md:block"
       style={{ x: cursorXSpring, y: cursorYSpring }}
     />
   );
@@ -550,17 +419,29 @@ const Counter = ({ from, to }) => {
   return <span ref={nodeRef} />;
 };
 
-const NeonButton = ({ children, icon, href, primary = true, onClick, className = "" }) => {
+const NeonButton = ({ children, icon, href, primary = true, onClick, disabled = false, className = "" }) => {
   const baseClass = `relative flex items-center justify-center gap-2 px-6 py-3 md:px-8 md:py-4 font-bold rounded-full transition-all overflow-hidden group z-10 text-sm md:text-base cursor-pointer select-none ${className}`;
   const styles = primary 
     ? "bg-purple-600 text-white shadow-[0_0_20px_rgba(147,51,234,0.5)] hover:shadow-[0_0_35px_rgba(168,85,247,0.8)] hover:bg-purple-500 hover:scale-105"
-    : "bg-transparent border border-white/20 text-white hover:bg-white/10 hover:border-white/50 hover:scale-105";
+    : "bg-transparent border border-veil/20 text-ink hover:bg-veil/10 hover:border-veil/50 hover:scale-105";
 
   const content = (
     <span className="relative z-10 flex items-center gap-2">{icon && <span className="text-lg">{icon}</span>} {children}</span>
   );
 
-  if (onClick) return <motion.button whileTap={{ scale: 0.95 }} onClick={onClick} className={`${baseClass} ${styles}`}>{content}</motion.button>;
+  // Sin `href` es un botón: `onClick` si lo hay, y si no el submit del formulario.
+  if (onClick || !href) {
+    return (
+      <motion.button
+        whileTap={disabled ? undefined : { scale: 0.95 }}
+        onClick={onClick}
+        disabled={disabled}
+        className={`${baseClass} ${styles} ${disabled ? 'opacity-60 pointer-events-none' : ''}`}
+      >
+        {content}
+      </motion.button>
+    );
+  }
 
   return (
     <motion.a href={href} target="_blank" rel="noopener noreferrer" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className={`${baseClass} ${styles}`}>
@@ -593,12 +474,7 @@ const CodeTerminal = ({ logs, colorClass }) => {
 };
 
 // --- MODAL DE INSTALACIÓN DE CV (ULTIMATE GACHA EDITION - RESPONSIVE) ---
-const CVInstallerModal = ({ onClose }) => {
-  const [progress, setProgress] = useState(0);
-  const [theme, setTheme] = useState(null);
-  const [logs, setLogs] = useState([]);
-  
-  const THEMES = [
+const CV_THEMES = [
     {
       id: 'dev',
       name: 'SENIOR_DEV.exe',
@@ -607,7 +483,6 @@ const CVInstallerModal = ({ onClose }) => {
       bgGradient: 'from-green-900/90 to-black',
       barColor: 'bg-green-500',
       icon: <FaTerminal className="text-6xl md:text-8xl drop-shadow-[0_0_15px_rgba(74,222,128,0.8)]" />,
-      commands: ["npm install experience...", "git commit -m 'Senior Skills'", "Optimizing React builds...", "Compiling TypeScript...", "Deploying to Production..."]
     },
     {
       id: 'kratos',
@@ -617,7 +492,6 @@ const CVInstallerModal = ({ onClose }) => {
       bgGradient: 'from-red-950/90 to-black',
       barColor: 'bg-red-600',
       icon: <FaHammer className="text-6xl md:text-8xl drop-shadow-[0_0_20px_rgba(220,38,38,0.8)] animate-pulse" />, 
-      commands: ["Afilando Hacha Leviatán...", "Invocando ira espartana...", "Derrotando bugs mitológicos...", "Abriendo cofre legendario...", "Ragnarök detenido."]
     },
     {
       id: 'mario',
@@ -627,7 +501,6 @@ const CVInstallerModal = ({ onClose }) => {
       bgGradient: 'from-blue-900/90 to-black',
       barColor: 'bg-yellow-400',
       icon: <SiNintendoswitch className="text-6xl md:text-8xl text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.8)] animate-bounce" />,
-      commands: ["Entrando a la tubería...", "Recolectando 100 monedas...", "Saltando sobre bugs...", "Rescatando el código...", "Power-up obtenido!"]
     },
     {
       id: 'tlou',
@@ -637,7 +510,6 @@ const CVInstallerModal = ({ onClose }) => {
       bgGradient: 'from-stone-900/90 to-black',
       barColor: 'bg-lime-500',
       icon: <FaLeaf className="text-6xl md:text-8xl drop-shadow-[0_0_15px_rgba(163,230,53,0.8)]" />,
-      commands: ["Escaneando entorno...", "Crafteando soluciones...", "Evitando errores infectados...", "Buscando la luz...", "Sincronizando red..."]
     },
     {
       id: 'cyber',
@@ -647,55 +519,64 @@ const CVInstallerModal = ({ onClose }) => {
       bgGradient: 'from-slate-900/90 to-black',
       barColor: 'bg-cyan-400',
       icon: <FaMicrochip className="text-6xl md:text-8xl drop-shadow-[0_0_20px_rgba(34,211,238,0.8)] animate-spin-slow" />,
-      commands: ["Hackeando la mainframe...", "Bypassing firewalls...", "Subiendo código neuronal...", "Desencriptando datos...", "Conexión establecida."]
     }
-  ];
+];
 
-  useEffect(() => {
-    setTheme(THEMES[Math.floor(Math.random() * THEMES.length)]);
-  }, []);
+// El tema se sortea en el manejador del clic y llega por props, para no llamar
+// a Math.random() durante el render.
+const CVInstallerModal = ({ theme, onClose }) => {
+  const { t } = useI18n();
+  const [progress, setProgress] = useState(0);
+  const [logs, setLogs] = useState([]);
+  const doneText = t.cv.done;
+  const themeId = theme?.id;
+  const commands = useMemo(() => (themeId ? t.cv.themes[themeId] : []), [themeId, t]);
 
   useEffect(() => {
     if (!theme) return;
-    
+
+    let value = 0;
+    const timers = [];
+
     const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          return 100;
-        }
+      value = Math.min(100, value + 1.5);
+      setProgress(value);
+
+      if (value < 100) {
         if (Math.random() > 0.7) {
-             setLogs(prevLogs => [...prevLogs, theme.commands[Math.floor(Math.random() * theme.commands.length)]]);
+          setLogs(prev => [...prev, commands[Math.floor(Math.random() * commands.length)]]);
         }
-        return prev + 1.5;
-      });
-    }, 50);
+        return;
+      }
 
-    return () => clearInterval(interval);
-  }, [theme]);
+      clearInterval(interval);
+      setLogs(prev => [...prev, doneText]);
 
-  useEffect(() => {
-    if (progress === 100) {
-      setLogs(prev => [...prev, "¡DESCARGA COMPLETADA!"]);
-      setTimeout(() => {
+      timers.push(setTimeout(() => {
         const link = document.createElement('a');
-        link.href = '/cv-cesar-neyra.pdf'; 
+        link.href = '/cv-cesar-neyra.pdf';
         link.download = 'CV_Cesar_Neyra_FullStack.pdf';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
-        setTimeout(onClose, 2500);
-      }, 800);
-    }
-  }, [progress, onClose]);
+
+        timers.push(setTimeout(onClose, 2500));
+      }, 800));
+    }, 50);
+
+    // Si el usuario cierra antes de acabar, no se dispara la descarga ni onClose.
+    return () => {
+      clearInterval(interval);
+      timers.forEach(clearTimeout);
+    };
+  }, [theme, onClose, commands, doneText]);
 
   if (!theme) return null;
 
   return (
     <motion.div 
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[10002] bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+      className="force-dark fixed inset-0 z-[10002] bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
     >
       <motion.div 
          initial={{ scale: 0.8, rotateX: 10 }} 
@@ -705,7 +586,7 @@ const CVInstallerModal = ({ onClose }) => {
          style={{ boxShadow: `0 0 40px ${theme.border.replace('border-', 'var(--tw-colors-')}` }}
       >
         <div className="w-full md:w-1/3 flex flex-col items-center justify-center p-6 border-b md:border-b-0 md:border-r border-white/10 relative overflow-hidden bg-black/30 min-h-[200px]">
-            <div className="absolute inset-0 opacity-20 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
+            <div className="absolute inset-0 opacity-20 bg-noise"></div>
             
             <div className={`relative z-10 ${theme.color} mb-4 md:mb-6`}>
                {theme.icon}
@@ -715,7 +596,7 @@ const CVInstallerModal = ({ onClose }) => {
                 {theme.name}
             </h3>
             <p className="text-gray-500 text-xs text-center mt-2 font-mono">
-                System Integrity: 100%
+                {t.cv.integrity}
             </p>
         </div>
 
@@ -733,7 +614,7 @@ const CVInstallerModal = ({ onClose }) => {
 
              <div className="space-y-2">
                  <div className="flex justify-between text-xs font-bold text-white uppercase">
-                     <span>Progress</span>
+                     <span>{t.cv.progress}</span>
                      <span>{Math.round(progress)}%</span>
                  </div>
                  <div className="h-3 bg-gray-800 rounded-full overflow-hidden border border-white/10">
@@ -753,6 +634,7 @@ const CVInstallerModal = ({ onClose }) => {
 
 // --- COMPONENTE GALERÍA INDEPENDIENTE (LIGHTBOX) ---
 const GalleryModal = ({ images, onClose }) => {
+  const { t } = useI18n();
   const [index, setIndex] = useState(0);
 
   const next = (e) => {
@@ -767,7 +649,7 @@ const GalleryModal = ({ images, onClose }) => {
   return (
     <motion.div 
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[10001] bg-black/95 flex items-center justify-center"
+      className="force-dark fixed inset-0 z-[10001] bg-black/95 flex items-center justify-center"
       onClick={onClose}
     >
       <button onClick={onClose} className="absolute top-6 right-6 text-white text-3xl p-2 hover:text-red-500 transition-colors z-50"><FaTimes/></button>
@@ -779,7 +661,7 @@ const GalleryModal = ({ images, onClose }) => {
               src={images[index]}
               initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
               className="max-w-full max-h-full object-contain shadow-2xl"
-              alt="Gallery"
+              alt={`${t.projects.modal.galleryAlt} ${index + 1}/${images.length}`}
             />
          </AnimatePresence>
 
@@ -800,6 +682,7 @@ const GalleryModal = ({ images, onClose }) => {
 
 // --- MODAL PRINCIPAL DE PROYECTO (INFO) ---
 const ProjectModal = ({ project, onClose }) => {
+    const { t } = useI18n();
     const [viewMode, setViewMode] = useState('business');
     const [showGallery, setShowGallery] = useState(false);
 
@@ -814,7 +697,7 @@ const ProjectModal = ({ project, onClose }) => {
             >
                 <motion.div 
                     initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }}
-                    className="bg-[#0f0c29] border border-purple-500/30 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative flex flex-col"
+                    className="bg-surface-deep border border-purple-500/30 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative flex flex-col"
                     onClick={(e) => e.stopPropagation()}
                 >
                     <button onClick={onClose} className="absolute top-4 right-4 z-50 p-2 bg-black/50 rounded-full text-white hover:bg-red-500/50 transition-colors">
@@ -822,7 +705,7 @@ const ProjectModal = ({ project, onClose }) => {
                     </button>
 
                     <div className={`h-32 bg-gradient-to-r ${project.gradient} flex items-center justify-center relative overflow-hidden`}>
-                        <div className="absolute inset-0 opacity-20 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
+                        <div className="absolute inset-0 opacity-20 bg-noise"></div>
                         <div className="text-6xl md:text-7xl text-white drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] transform hover:scale-110 transition-transform duration-500">
                           {project.icon}
                         </div>
@@ -831,25 +714,25 @@ const ProjectModal = ({ project, onClose }) => {
                     <div className="p-6 md:p-8 flex flex-col">
                         <div className="text-center mb-6">
                              <div className="flex justify-center items-center gap-2 mb-2">
-                               <span className="bg-purple-600/20 text-purple-300 border border-purple-500/30 text-xs font-bold px-3 py-1 rounded-full">{project.category}</span>
-                               {project.badge && <span className="bg-green-600/20 text-green-400 border border-green-500/30 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1"><FaBolt/> {project.badge}</span>}
+                               <span className="bg-purple-600/20 text-purple-300 border border-purple-500/30 text-xs font-bold px-3 py-1 rounded-full">{t.projects.filters[project.category]}</span>
+                               {project.badge && <span className="bg-green-600/20 text-green-400 border border-green-500/30 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1"><FaBolt/> {t.projects.badges[project.badge]}</span>}
                              </div>
-                             <h3 className="text-3xl font-black text-white leading-tight mb-1">{project.title}</h3>
-                             <p className="text-gray-400 font-medium">{project.subtitle}</p>
+                             <h3 className="text-3xl font-black text-ink leading-tight mb-1">{project.title}</h3>
+                             <p className="text-ink-soft font-medium">{project.copy.subtitle}</p>
                         </div>
 
-                        <div className="bg-white/5 p-1 rounded-xl flex mb-6 border border-white/10 relative">
+                        <div className="bg-veil/5 p-1 rounded-xl flex mb-6 border border-veil/10 relative">
                             <button 
                               onClick={() => setViewMode('business')}
-                              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-bold transition-all z-10 ${viewMode === 'business' ? 'text-white' : 'text-gray-400 hover:text-white'}`}
+                              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-bold transition-all z-10 ${viewMode === 'business' ? 'text-white' : 'text-ink-soft hover:text-ink'}`}
                             >
-                              <FaChartLine /> Negocio
+                              <FaChartLine /> {t.projects.modal.tabBusiness}
                             </button>
                             <button 
                               onClick={() => setViewMode('tech')}
-                              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-bold transition-all z-10 ${viewMode === 'tech' ? 'text-white' : 'text-gray-400 hover:text-white'}`}
+                              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-bold transition-all z-10 ${viewMode === 'tech' ? 'text-white' : 'text-ink-soft hover:text-ink'}`}
                             >
-                              <FaCode /> Técnico
+                              <FaCode /> {t.projects.modal.tabTech}
                             </button>
                             <motion.div 
                               animate={{ x: viewMode === 'business' ? '0%' : '100%' }}
@@ -866,14 +749,14 @@ const ProjectModal = ({ project, onClose }) => {
                                       className="space-y-4"
                                     >
                                         <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl">
-                                          <h4 className="text-red-400 font-bold text-sm mb-1">🔴 El Problema</h4>
-                                          <p className="text-gray-300 text-sm leading-relaxed">{project.business.problem}</p>
+                                          <h4 className="text-red-400 font-bold text-sm mb-1">🔴 {t.projects.modal.problem}</h4>
+                                          <p className="text-ink-soft text-sm leading-relaxed">{project.copy.problem}</p>
                                         </div>
                                         <div className="bg-green-500/10 border border-green-500/20 p-4 rounded-xl">
-                                          <h4 className="text-green-400 font-bold text-sm mb-1">🟢 La Solución</h4>
-                                          <p className="text-gray-300 text-sm leading-relaxed mb-2">{project.business.solution}</p>
+                                          <h4 className="text-green-400 font-bold text-sm mb-1">🟢 {t.projects.modal.solution}</h4>
+                                          <p className="text-ink-soft text-sm leading-relaxed mb-2">{project.copy.solution}</p>
                                           <div className="mt-3 pt-3 border-t border-green-500/20">
-                                             <p className="text-white font-bold text-sm flex items-start gap-2"><FaStar className="text-yellow-400 mt-1 flex-shrink-0"/> {project.business.impact}</p>
+                                             <p className="text-ink font-bold text-sm flex items-start gap-2"><FaStar className="text-yellow-400 mt-1 flex-shrink-0"/> {project.copy.impact}</p>
                                           </div>
                                         </div>
                                     </motion.div>
@@ -884,20 +767,20 @@ const ProjectModal = ({ project, onClose }) => {
                                       className="space-y-5"
                                     >
                                         <div>
-                                          <h4 className="text-purple-300 font-bold text-sm mb-2 flex items-center gap-2"><FaLayerGroup/> Arquitectura</h4>
-                                          <p className="text-gray-300 text-sm bg-white/5 p-3 rounded-lg border-l-2 border-purple-500">{project.tech.architecture}</p>
+                                          <h4 className="text-purple-300 font-bold text-sm mb-2 flex items-center gap-2"><FaLayerGroup/> {t.projects.modal.architecture}</h4>
+                                          <p className="text-ink-soft text-sm bg-veil/5 p-3 rounded-lg border-l-2 border-purple-500">{project.copy.architecture}</p>
                                         </div>
                                         
                                         <div>
-                                          <h4 className="text-cyan-300 font-bold text-sm mb-2 flex items-center gap-2"><FaDatabase/> Stack Tecnológico</h4>
+                                          <h4 className="text-cyan-300 font-bold text-sm mb-2 flex items-center gap-2"><FaDatabase/> {t.projects.modal.stack}</h4>
                                           <div className="flex flex-wrap gap-2 mb-3">
                                               {project.techStackIcons.map((icon, i) => (
-                                                <span key={i} className="text-2xl text-gray-300 bg-white/5 p-2 rounded-lg border border-white/10">{icon}</span>
+                                                <span key={i} className="text-2xl text-ink-soft bg-veil/5 p-2 rounded-lg border border-veil/10">{icon}</span>
                                               ))}
                                           </div>
                                           <div className="grid grid-cols-2 gap-2">
-                                            {project.tech.stack.map((item, i) => (
-                                              <div key={i} className="flex items-center gap-2 text-xs text-gray-400 font-mono bg-black/20 px-2 py-1 rounded">
+                                            {project.stack.map((item, i) => (
+                                              <div key={i} className="flex items-center gap-2 text-xs text-ink-soft font-mono bg-veil/5 px-2 py-1 rounded">
                                                 <span className="w-1.5 h-1.5 bg-cyan-500 rounded-full"></span> {item}
                                               </div>
                                             ))}
@@ -905,23 +788,25 @@ const ProjectModal = ({ project, onClose }) => {
                                         </div>
 
                                         <div className="bg-blue-500/10 border border-blue-500/20 p-3 rounded-lg">
-                                           <h4 className="text-blue-300 font-bold text-xs mb-1 uppercase flex items-center gap-2"><FaBrain/> Reto Principal</h4>
-                                           <p className="text-gray-300 text-xs">{project.tech.challenges}</p>
+                                           <h4 className="text-blue-300 font-bold text-xs mb-1 uppercase flex items-center gap-2"><FaBrain/> {t.projects.modal.challenge}</h4>
+                                           <p className="text-ink-soft text-xs">{project.copy.challenges}</p>
                                         </div>
                                     </motion.div>
                                 )}
                             </AnimatePresence>
                         </div>
 
-                        <div className="mt-8 pt-6 border-t border-white/10 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                             <NeonButton onClick={() => setShowGallery(true)} primary={false} icon={<FaImages/>}>
-                               Ver Capturas
-                             </NeonButton>
-                             
+                        <div className="mt-8 pt-6 border-t border-veil/10 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                             {project.gallery.length > 0 && (
+                               <NeonButton onClick={() => setShowGallery(true)} primary={false} icon={<FaImages/>}>
+                                 {t.projects.modal.gallery}
+                               </NeonButton>
+                             )}
+
                              {project.link !== "#" ? (
-                                  <NeonButton href={project.link} className="justify-center" icon={<FaExternalLinkAlt/>}>Visitar Web App</NeonButton>
+                                  <NeonButton href={project.link} className="justify-center" icon={<FaExternalLinkAlt/>}>{t.projects.modal.visit}</NeonButton>
                              ) : (
-                                  <NeonButton href={SOCIAL_LINKS.whatsapp} className="justify-center" icon={<FaRocket/>}>Cotizar</NeonButton>
+                                  <NeonButton href={SOCIAL_LINKS.whatsapp} className="justify-center" icon={<FaRocket/>}>{t.projects.modal.quote}</NeonButton>
                              )}
                         </div>
                     </div>
@@ -937,10 +822,17 @@ const ProjectModal = ({ project, onClose }) => {
 };
 
 // --- NUEVO FORMULARIO DE CONTACTO (CORREGIDO INPUTS & GMAIL) ---
+const CONTACT_EMAIL = "neyrajcf@gmail.com";
+
 const ContactForm = () => {
+  const { t } = useI18n();
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sent, setSent] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
+  const timers = useRef([]);
+
+  useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -949,31 +841,47 @@ const ContactForm = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
-    setTimeout(() => {
-      const subject = `Nuevo Mensaje de Portafolio: ${formData.name}`;
-      const body = `Nombre: ${formData.name}\nEmail: ${formData.email}\n\nMensaje:\n${formData.message}`;
-      const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=neyrajcf@gmail.com&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-      
-      window.open(gmailUrl, '_blank');
-      
+
+    const f = t.contact.form;
+    const subject = fill(f.subject, { name: formData.name });
+    const body = `${f.bodyName}: ${formData.name}\n${f.bodyEmail}: ${formData.email}\n\n${f.bodyMessage}:\n${formData.message}`;
+    const query = `su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${CONTACT_EMAIL}&${query}`;
+    const mailtoUrl = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+    const timer = setTimeout(() => {
+      // Si el navegador bloquea la ventana emergente, window.open devuelve null
+      // y el mensaje se perdía en silencio. Ahí caemos al cliente de correo
+      // del sistema, que no depende de tener sesión en Gmail.
+      const win = window.open(gmailUrl, "_blank", "noopener,noreferrer");
+      if (!win) window.location.href = mailtoUrl;
+
       setIsSubmitting(false);
-      setFormData({ name: '', email: '', message: '' });
-    }, 1000);
+      setSent(true);
+    }, 600);
+
+    timers.current.push(timer);
   };
 
-  const inputClasses = "w-full bg-transparent border-none text-white placeholder-transparent focus:outline-none focus:ring-0 peer relative z-10 pt-2";
-  const labelClasses = "absolute left-0 top-1 text-xs text-purple-400 transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-500 peer-placeholder-shown:top-6 peer-focus:top-1 peer-focus:text-xs peer-focus:text-purple-400 flex items-center gap-2 pointer-events-none z-0";
-  const containerClasses = (field) => `relative border-b border-white/20 pt-6 pb-2 focus-within:border-purple-500 transition-all overflow-hidden group ${focusedField === field ? 'shadow-[0_4px_20px_-5px_rgba(168,85,247,0.5)]' : ''}`;
+  const reset = () => {
+    setSent(false);
+    setFormData({ name: '', email: '', message: '' });
+  };
+
+  const inputClasses = "w-full bg-transparent border-none text-ink placeholder-transparent focus:outline-none focus:ring-0 peer relative z-10 pt-2";
+  const labelClasses = "absolute left-0 top-1 text-xs text-purple-400 transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-ink-faint peer-placeholder-shown:top-6 peer-focus:top-1 peer-focus:text-xs peer-focus:text-purple-400 flex items-center gap-2 pointer-events-none z-0";
+  const containerClasses = (field) => `relative border-b border-veil/20 pt-6 pb-2 focus-within:border-purple-500 transition-all overflow-hidden group ${focusedField === field ? 'shadow-[0_4px_20px_-5px_rgba(168,85,247,0.5)]' : ''}`;
+
+  if (sent) return <ContactSent onReset={reset} />;
 
   return (
-    <motion.form 
+    <motion.form
       initial={{ opacity: 0, x: 30 }}
       whileInView={{ opacity: 1, x: 0 }}
       viewport={{ once: true }}
       transition={{ type: "spring", stiffness: 100, delay: 0.2 }}
       onSubmit={handleSubmit}
-      className="bg-[#0a0a1a]/80 backdrop-blur-2xl p-8 md:p-10 rounded-[2rem] border border-purple-500/20 w-full shadow-[0_0_40px_rgba(168,85,247,0.15)] relative overflow-hidden group"
+      className="bg-surface/80 backdrop-blur-2xl p-8 md:p-10 rounded-[2rem] border border-purple-500/20 w-full shadow-[0_0_40px_rgba(168,85,247,0.15)] relative overflow-hidden group"
     >
       <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-transparent to-cyan-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
       <div className="absolute -top-20 -right-20 w-40 h-40 bg-purple-500/30 rounded-full blur-[80px] pointer-events-none animate-pulse"></div>
@@ -982,47 +890,47 @@ const ContactForm = () => {
       <div className="space-y-6 relative z-10">
         <div className={containerClasses('name')} onFocus={() => setFocusedField('name')} onBlur={() => setFocusedField(null)}>
            <input 
-             type="text" id="name" name="name" required placeholder="Nombre"
+             type="text" id="name" name="name" required placeholder={t.contact.form.name}
              value={formData.name} onChange={handleChange}
              className={inputClasses}
            />
            <label htmlFor="name" className={labelClasses}>
-             <FaUser/> Tu Nombre
+             <FaUser/> {t.contact.form.name}
            </label>
            <div className={`absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-purple-500 to-cyan-500 transition-all duration-500 ${focusedField === 'name' ? 'w-full' : 'w-0'}`}></div>
         </div>
 
         <div className={containerClasses('email')} onFocus={() => setFocusedField('email')} onBlur={() => setFocusedField(null)}>
            <input 
-             type="email" id="email" name="email" required placeholder="Email"
+             type="email" id="email" name="email" required placeholder={t.contact.form.email}
              value={formData.email} onChange={handleChange}
              className={inputClasses}
            />
            <label htmlFor="email" className={labelClasses}>
-             <FaEnvelope/> Tu Correo
+             <FaEnvelope/> {t.contact.form.email}
            </label>
            <div className={`absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-cyan-500 to-purple-500 transition-all duration-500 ${focusedField === 'email' ? 'w-full' : 'w-0'}`}></div>
         </div>
 
         <div className={containerClasses('message')} onFocus={() => setFocusedField('message')} onBlur={() => setFocusedField(null)}>
            <textarea 
-             id="message" name="message" required rows="4" placeholder="Mensaje"
+             id="message" name="message" required rows="4" placeholder={t.contact.form.message}
              value={formData.message} onChange={handleChange}
              className={`${inputClasses} resize-none`}
            ></textarea>
            <label htmlFor="message" className={labelClasses}>
-             <FaPen/> Cuéntame tu idea
+             <FaPen/> {t.contact.form.message}
            </label>
            <div className={`absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-pink-500 to-purple-500 transition-all duration-500 ${focusedField === 'message' ? 'w-full' : 'w-0'}`}></div>
         </div>
       </div>
 
       <div className="mt-8 relative z-10">
-        <NeonButton className="w-full justify-center relative overflow-hidden group" onClick={() => {}} primary={true}>
+        <NeonButton className="w-full justify-center relative overflow-hidden group" disabled={isSubmitting} primary={true}>
           {isSubmitting ? (
-             <span className="flex items-center gap-2"><FaCheckCircle className="animate-bounce text-green-300"/> Abriendo Gmail...</span>
+             <span className="flex items-center gap-2"><FaCheckCircle className="animate-bounce text-green-300"/> {t.contact.form.sending}</span>
           ) : (
-             <span className="flex items-center gap-2">Enviar Mensaje <FaRegPaperPlane className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform animate-pulse"/></span>
+             <span className="flex items-center gap-2">{t.contact.form.send} <FaRegPaperPlane className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform animate-pulse"/></span>
           )}
         </NeonButton>
       </div>
@@ -1030,18 +938,60 @@ const ContactForm = () => {
   );
 };
 
+// Nunca afirmamos "mensaje enviado": lo único que sabemos es que hemos abierto
+// el cliente de correo. Quien envía es el visitante.
+const ContactSent = ({ onReset }) => {
+  const { t } = useI18n();
+  const f = t.contact.form;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.96 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="bg-surface/80 backdrop-blur-2xl p-8 md:p-10 rounded-[2rem] border border-green-500/30 w-full shadow-[0_0_40px_rgba(34,197,94,0.15)] relative overflow-hidden text-center"
+    >
+      <div className="absolute -top-20 -right-20 w-40 h-40 bg-green-500/20 rounded-full blur-[80px] pointer-events-none"></div>
+
+      <div className="relative z-10 flex flex-col items-center gap-4">
+        <div className="w-16 h-16 rounded-full bg-green-500/15 border border-green-500/30 flex items-center justify-center">
+          <FaCheckCircle className="text-3xl text-green-400" />
+        </div>
+        <h3 className="text-2xl font-bold text-ink">{f.okTitle}</h3>
+        <p className="text-ink-soft text-sm leading-relaxed max-w-sm">{f.okBody}</p>
+
+        <a
+          href={`mailto:${CONTACT_EMAIL}`}
+          className="inline-flex items-center gap-2 text-purple-400 hover:text-purple-300 font-bold text-sm underline underline-offset-4 break-all"
+        >
+          <FaEnvelope className="flex-shrink-0" /> {f.writeTo} {CONTACT_EMAIL}
+        </a>
+
+        <button
+          onClick={onReset}
+          className="mt-2 text-ink-faint hover:text-ink text-sm transition-colors underline underline-offset-4"
+        >
+          {f.again}
+        </button>
+      </div>
+    </motion.div>
+  );
+};
+
+// Clases completas (Tailwind no puede resolver `bg-${color}-600/20` en runtime).
+const CARD_COLORS = {
+    purple:  { glow: "bg-purple-600/20",  hover: "group-hover:bg-purple-500/30",  card: "" },
+    indigo:  { glow: "bg-indigo-600/20",  hover: "group-hover:bg-indigo-500/30",  card: "hover:bg-indigo-900/20" },
+    fuchsia: { glow: "bg-fuchsia-600/20", hover: "group-hover:bg-fuchsia-500/30", card: "hover:bg-fuchsia-900/20" },
+    cyan:    { glow: "bg-cyan-600/20",    hover: "group-hover:bg-cyan-500/30",    card: "hover:bg-cyan-900/20" },
+};
+
 const Card = ({ children, className = "", color = "purple", onClick }) => {
-    const colorClasses = {
-        purple: "group-hover:bg-purple-500/30",
-        indigo: "group-hover:bg-indigo-500/30 hover:bg-indigo-900/20",
-        fuchsia: "group-hover:bg-fuchsia-500/30 hover:bg-fuchsia-900/20",
-        cyan: "group-hover:bg-cyan-500/30 hover:bg-cyan-900/20",
-    };
+    const c = CARD_COLORS[color] || CARD_COLORS.purple;
 
     return (
         <div className="h-full" onClick={onClick}>
-            <div className={`bg-slate-900/60 backdrop-blur-xl border border-white/10 p-6 rounded-3xl relative overflow-hidden group flex flex-col h-full shadow-2xl transition-all duration-300 cursor-pointer ${className} ${colorClasses[color] || ""}`}>
-                <div className={`absolute -right-10 -top-10 w-32 h-32 bg-${color}-600/20 rounded-full blur-3xl transition-colors pointer-events-none ${colorClasses[color].split(' ')[0]}`}></div>
+            <div className={`bg-surface/60 backdrop-blur-xl border border-veil/10 p-6 rounded-3xl relative overflow-hidden group flex flex-col h-full shadow-2xl transition-all duration-300 cursor-pointer ${className} ${c.hover} ${c.card}`}>
+                <div className={`absolute -right-10 -top-10 w-32 h-32 ${c.glow} rounded-full blur-3xl transition-colors pointer-events-none ${c.hover}`}></div>
                 <div className="relative z-10 flex flex-col h-full">
                     {children}
                 </div>
@@ -1056,20 +1006,26 @@ const TypewriterText = ({ texts }) => {
   const [reverse, setReverse] = useState(false);
   const [blink, setBlink] = useState(true);
 
+  // Todo cambio de estado ocurre dentro del timeout, nunca en el cuerpo del
+  // efecto (evita renders en cascada).
   useEffect(() => {
-    if (subIndex === texts[index].length + 1 && !reverse) {
-      setTimeout(() => setReverse(true), 1000);
-      return;
+    const current = texts[index] ?? "";
+
+    if (!reverse && subIndex >= current.length) {
+      const t = setTimeout(() => setReverse(true), 1000);
+      return () => clearTimeout(t);
     }
-    if (subIndex === 0 && reverse) {
-      setReverse(false);
-      setIndex((prev) => (prev + 1) % texts.length);
-      return;
+    if (reverse && subIndex === 0) {
+      const t = setTimeout(() => {
+        setReverse(false);
+        setIndex((prev) => (prev + 1) % texts.length);
+      }, 300);
+      return () => clearTimeout(t);
     }
-    const timeout = setTimeout(() => {
+    const t = setTimeout(() => {
       setSubIndex((prev) => prev + (reverse ? -1 : 1));
     }, reverse ? 75 : 150);
-    return () => clearTimeout(timeout);
+    return () => clearTimeout(t);
   }, [subIndex, index, reverse, texts]);
 
   useEffect(() => {
@@ -1080,33 +1036,46 @@ const TypewriterText = ({ texts }) => {
   return (
     <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 font-mono min-h-[1.5em] inline-block font-bold">
       {texts[index].substring(0, subIndex)}
-      <span className={`text-white ${blink ? "opacity-100" : "opacity-0"}`}>|</span>
+      <span className={`text-ink ${blink ? "opacity-100" : "opacity-0"}`}>|</span>
     </span>
   );
 };
 
-const BackgroundParticles = () => {
-    return (
-        <div className="fixed inset-0 z-[-1] pointer-events-none overflow-hidden">
-            {[...Array(20)].map((_, i) => (
-                <motion.div
-                    key={i}
-                    initial={{ x: Math.random() * window.innerWidth, y: Math.random() * window.innerHeight, opacity: Math.random() * 0.5 + 0.1 }}
-                    animate={{ y: [null, Math.random() * -100], opacity: [null, 0] }}
-                    transition={{ duration: Math.random() * 10 + 10, repeat: Infinity, ease: "linear" }}
-                    className="absolute w-1 h-1 bg-purple-400 rounded-full shadow-[0_0_10px_rgba(168,85,247,0.5)]"
-                />
-            ))}
-        </div>
-    )
-}
+// Partículas precalculadas a nivel de módulo: nada de Math.random() ni window
+// durante el render (impuro y rompe con renderizado concurrente).
+const PARTICLES = Array.from({ length: 20 }, (_, i) => {
+    // Secuencia de baja discrepancia: reparte sin agrupar y es determinista.
+    const frac = (n) => (i * n) % 1;
+    return {
+        left: frac(0.6180339887) * 100,
+        top: frac(0.7548776662) * 100,
+        opacity: 0.1 + frac(0.4142135624) * 0.5,
+        drift: -40 - frac(0.3027756377) * 60,
+        duration: 10 + frac(0.5436890127) * 10,
+    };
+});
+
+const BackgroundParticles = () => (
+    <div className="fixed inset-0 z-[-1] pointer-events-none overflow-hidden">
+        {PARTICLES.map((p, i) => (
+            <motion.div
+                key={i}
+                style={{ left: `${p.left}%`, top: `${p.top}%` }}
+                initial={{ y: 0, opacity: p.opacity }}
+                animate={{ y: p.drift, opacity: 0 }}
+                transition={{ duration: p.duration, repeat: Infinity, ease: "linear" }}
+                className="absolute w-1 h-1 bg-purple-400 rounded-full shadow-[0_0_10px_rgba(168,85,247,0.5)]"
+            />
+        ))}
+    </div>
+);
 
 const ScrollToTopButton = () => {
   const { scrollYProgress } = useScroll();
   const [showButton, setShowButton] = useState(false);
 
   useEffect(() => {
-    return scrollYProgress.onChange((latest) => {
+    return scrollYProgress.on("change", (latest) => {
       setShowButton(latest > 0.1);
     });
   }, [scrollYProgress]);
@@ -1132,147 +1101,307 @@ const ScrollToTopButton = () => {
 
 // --- ASISTENTE IA MEJORADO (MODERNO Y ANIMADO) ---
 const TypingIndicator = () => (
-  <div className="flex gap-1 p-2 bg-white/10 rounded-xl w-fit mb-2">
-    <motion.div animate={{ y: [0, -5, 0] }} transition={{ duration: 0.6, repeat: Infinity, delay: 0 }} className="w-2 h-2 bg-purple-400 rounded-full"></motion.div>
-    <motion.div animate={{ y: [0, -5, 0] }} transition={{ duration: 0.6, repeat: Infinity, delay: 0.2 }} className="w-2 h-2 bg-purple-400 rounded-full"></motion.div>
-    <motion.div animate={{ y: [0, -5, 0] }} transition={{ duration: 0.6, repeat: Infinity, delay: 0.4 }} className="w-2 h-2 bg-purple-400 rounded-full"></motion.div>
+  <div className="flex gap-1 px-3 py-2.5 bg-veil/10 rounded-2xl rounded-tl-sm w-fit">
+    {[0, 0.15, 0.3].map((delay) => (
+      <motion.span
+        key={delay}
+        animate={{ y: [0, -4, 0], opacity: [0.4, 1, 0.4] }}
+        transition={{ duration: 0.9, repeat: Infinity, delay }}
+        className="w-1.5 h-1.5 bg-purple-400 rounded-full"
+      />
+    ))}
   </div>
 );
 
+// Panel de contacto rápido. Antes imitaba un chat con IA ("NeyraBot AI",
+// "Online & Ready") pero no tenía dónde escribir: parecía roto. Ahora el campo
+// de texto funciona de verdad — abre WhatsApp con el mensaje ya redactado — y
+// el encabezado dice lo que realmente pasa.
 const SmartAssistant = () => {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [showTyping, setShowTyping] = useState(false);
+  const [draft, setDraft] = useState("");
   const messagesEndRef = useRef(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const inputRef = useRef(null);
+  const panelRef = useRef(null);
 
   useEffect(() => {
-    scrollToBottom();
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [messages, showTyping]);
 
+  // Saludo por pasos, con los cambios de estado dentro de los temporizadores.
   useEffect(() => {
-    if (open && messages.length === 0) {
-      setShowTyping(true);
-      setTimeout(() => {
-        setMessages([{ type: 'bot', text: '¡Hola! Soy NeyraBot 🤖' }]);
-        setShowTyping(true);
-        setTimeout(() => {
-          setMessages(prev => [...prev, { type: 'bot', text: '¿En qué puedo ayudarte hoy?' }]);
-          setShowTyping(false);
-        }, 1000);
-      }, 1000);
-    }
+    if (!open || messages.length > 0) return;
+    const timers = [];
+    timers.push(setTimeout(() => {
+      setMessages([{ from: "bot", text: t.chat.greeting1 }]);
+      timers.push(setTimeout(() => {
+        setMessages((prev) => [...prev, { from: "bot", text: t.chat.greeting2 }]);
+        setShowTyping(false);
+        inputRef.current?.focus();
+      }, 700));
+    }, 500));
+    return () => timers.forEach(clearTimeout);
+  }, [open, messages.length, t]);
+
+  // Escape cierra el panel; es lo que espera cualquiera que use teclado.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
   }, [open]);
 
-  const toggleOpen = () => setOpen(!open);
+  const toggleOpen = () => {
+    if (!open && messages.length === 0) setShowTyping(true);
+    setOpen(!open);
+  };
+
+  const sendDraft = (e) => {
+    e.preventDefault();
+    const text = draft.trim();
+    if (!text) return;
+
+    setMessages((prev) => [...prev, { from: "me", text }, { from: "note", text: t.chat.sentNote }]);
+    setDraft("");
+    window.open(`${SOCIAL_LINKS.whatsapp}?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
+  };
+
+  const goTo = (id) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    setOpen(false);
+  };
 
   const quickActions = [
-    { icon: <FaStar />, text: "Ver Experiencia Ruag", action: () => document.getElementById('proyectos').scrollIntoView({ behavior: 'smooth' }) },
-    { icon: <FaWhatsapp />, text: "Cotizar ahora", link: SOCIAL_LINKS.whatsapp },
-    { icon: <FaLaptopCode />, text: "Mis servicios", action: () => document.getElementById('servicios').scrollIntoView({ behavior: 'smooth' }) },
+    { icon: <FaLaptopCode />, text: t.chat.actions.services, onClick: () => goTo("servicios") },
+    { icon: <FaStar />, text: t.chat.actions.experience, onClick: () => goTo("proyectos") },
+    { icon: <FaRocket />, text: t.chat.actions.pricing, onClick: () => goTo("planes") },
+    { icon: <FaWhatsapp />, text: t.chat.actions.quote, link: SOCIAL_LINKS.whatsapp },
   ];
 
   return (
-    <div className="fixed bottom-8 left-8 z-[99999]">
+    <div className="fixed bottom-6 left-6 z-[99999]">
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.9, transformOrigin: "bottom left" }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="absolute bottom-20 left-0 w-80 bg-[#0a0a1a]/95 backdrop-blur-xl border border-purple-500/30 overflow-hidden rounded-3xl shadow-[0_0_40px_-10px_rgba(168,85,247,0.5)] flex flex-col"
+            ref={panelRef}
+            role="dialog"
+            aria-label={t.chat.title}
+            // La entrada no toca la opacidad: si la animación no corre, el
+            // panel se ve igual en vez de quedarse invisible.
+            initial={{ y: 14, scale: 0.97 }}
+            animate={{ y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 14, scale: 0.97 }}
+            transition={{ type: "spring", stiffness: 260, damping: 24 }}
+            style={{ transformOrigin: "bottom left" }}
+            className="absolute bottom-[4.5rem] left-0 w-[min(92vw,22rem)] bg-surface/95 backdrop-blur-2xl border border-veil/10 rounded-3xl overflow-hidden shadow-[0_24px_60px_-20px_rgba(88,28,135,0.55)] flex flex-col"
           >
-            <div className="bg-gradient-to-r from-purple-900/40 to-blue-900/40 p-4 flex items-center gap-3 border-b border-white/10">
-                <div className="w-10 h-10 bg-gradient-to-tr from-purple-500 to-cyan-500 rounded-full flex items-center justify-center shadow-lg relative">
-                    <FaRobot className="text-white text-lg" />
-                    <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[#0a0a1a] rounded-full"></span>
-                </div>
-                <div>
-                    <h4 className="font-bold text-white text-sm leading-tight">NeyraBot AI</h4>
-                    <p className="text-[10px] text-purple-200 flex items-center gap-1">Online & Ready</p>
-                </div>
-                <button onClick={toggleOpen} className="ml-auto text-white/50 hover:text-white transition-colors"><FaTimes/></button>
+            {/* Cabecera */}
+            <div className="flex items-center gap-3 p-4 border-b border-veil/10">
+              <div className="relative flex-shrink-0">
+                <img src="/mi-foto.png" alt="César Neyra" className="w-11 h-11 rounded-full object-cover ring-2 ring-purple-500/40" />
+                <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-surface rounded-full"></span>
+              </div>
+              <div className="min-w-0 flex-grow">
+                <h4 className="font-bold text-ink text-sm leading-tight truncate">{t.chat.title}</h4>
+                <p className="text-[11px] text-ink-soft truncate">{t.chat.subtitle}</p>
+              </div>
+              <button
+                onClick={toggleOpen}
+                aria-label={t.projects.modal.close}
+                className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-full text-ink-soft hover:text-ink hover:bg-veil/10 transition-colors"
+              >
+                <FaTimes />
+              </button>
             </div>
-            
-            <div className="p-4 h-64 overflow-y-auto flex flex-col gap-3 bg-gradient-to-b from-transparent to-black/20 custom-scrollbar">
-                {messages.map((msg, idx) => (
-                  <motion.div 
-                    key={idx}
-                    initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
-                    className={`p-3 rounded-2xl text-sm max-w-[85%] shadow-sm ${msg.type === 'bot' ? 'bg-white/10 text-gray-100 rounded-tl-none self-start' : 'bg-purple-600 text-white rounded-tr-none self-end'}`}
+
+            {/* Conversación */}
+            <div className="px-4 py-4 max-h-64 overflow-y-auto flex flex-col gap-2.5 custom-scrollbar">
+              {messages.map((msg, i) => {
+                if (msg.from === "note") {
+                  return (
+                    <p key={i} className="text-[11px] text-ink-faint leading-relaxed text-center px-2 py-1">
+                      {msg.text}
+                    </p>
+                  );
+                }
+                const mine = msg.from === "me";
+                return (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed max-w-[85%] ${
+                      mine
+                        ? "bg-purple-600 text-white rounded-br-sm self-end"
+                        : "bg-veil/10 text-ink rounded-tl-sm self-start"
+                    }`}
                   >
                     {msg.text}
                   </motion.div>
-                ))}
-                
-                {showTyping && <TypingIndicator />}
-                <div ref={messagesEndRef} />
+                );
+              })}
+              {showTyping && <TypingIndicator />}
+              <div ref={messagesEndRef} />
             </div>
 
-            <div className="p-3 bg-black/40 border-t border-white/5">
-                <p className="text-[10px] text-gray-500 font-bold mb-2 uppercase tracking-wider ml-1">Sugerencias</p>
-                <div className="flex flex-col gap-2">
-                  {quickActions.map((qa, i) => (
-                      qa.link ? (
-                          <a key={i} href={qa.link} target="_blank" rel="noreferrer" className="flex items-center gap-3 p-2.5 rounded-xl bg-white/5 hover:bg-purple-500/20 border border-white/5 hover:border-purple-500/30 transition-all text-xs cursor-pointer group">
-                              <span className="text-purple-400 group-hover:scale-110 transition-transform">{qa.icon}</span>
-                              <span className="text-gray-300 group-hover:text-white">{qa.text}</span>
-                          </a>
-                      ) : (
-                          <div key={i} onClick={() => { qa.action(); setOpen(false); }} className="flex items-center gap-3 p-2.5 rounded-xl bg-white/5 hover:bg-purple-500/20 border border-white/5 hover:border-purple-500/30 transition-all text-xs cursor-pointer group">
-                              <span className="text-purple-400 group-hover:scale-110 transition-transform">{qa.icon}</span>
-                              <span className="text-gray-300 group-hover:text-white">{qa.text}</span>
-                          </div>
-                      )
-                  ))}
-                </div>
+            {/* Accesos rápidos */}
+            <div className="px-4 pb-3">
+              <p className="text-[10px] text-ink-soft font-bold uppercase tracking-wider mb-2">{t.chat.suggestions}</p>
+              <div className="flex flex-wrap gap-1.5">
+                {quickActions.map((qa, i) => {
+                  const cls = "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-veil/5 hover:bg-purple-500/15 border border-veil/10 hover:border-purple-500/40 text-xs text-ink-soft hover:text-ink transition-colors";
+                  return qa.link ? (
+                    <a key={i} href={qa.link} target="_blank" rel="noreferrer" className={cls}>
+                      <span className="text-purple-400">{qa.icon}</span> {qa.text}
+                    </a>
+                  ) : (
+                    <button key={i} onClick={qa.onClick} className={cls}>
+                      <span className="text-purple-400">{qa.icon}</span> {qa.text}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
+
+            {/* Escribir: el texto se envía por WhatsApp, no se queda en el aire */}
+            <form onSubmit={sendDraft} className="flex items-center gap-2 p-3 border-t border-veil/10 bg-veil/5">
+              <label htmlFor="chat-draft" className="sr-only">{t.chat.inputPlaceholder}</label>
+              <input
+                id="chat-draft"
+                ref={inputRef}
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                placeholder={t.chat.inputPlaceholder}
+                className="flex-grow min-w-0 bg-transparent text-sm text-ink placeholder:text-ink-faint focus:outline-none px-2 py-1.5"
+              />
+              <button
+                type="submit"
+                disabled={!draft.trim()}
+                aria-label={t.chat.send}
+                className="w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-full bg-purple-600 text-white transition-all hover:bg-purple-500 disabled:opacity-40 disabled:pointer-events-none"
+              >
+                <FaPaperPlane className="text-xs" />
+              </button>
+            </form>
           </motion.div>
         )}
       </AnimatePresence>
-      
+
       <motion.button
-        whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+        whileHover={{ scale: 1.06 }}
+        whileTap={{ scale: 0.94 }}
         onClick={toggleOpen}
-        className={`w-14 h-14 rounded-full shadow-[0_0_30px_rgba(168,85,247,0.6)] transition-all relative overflow-hidden group flex items-center justify-center z-50 ${open ? 'bg-white text-purple-600 rotate-90' : 'bg-gradient-to-tr from-purple-600 to-blue-600 text-white'}`}
+        aria-label={t.chat.title}
+        aria-expanded={open}
+        className={`w-14 h-14 rounded-full flex items-center justify-center relative transition-colors shadow-[0_8px_30px_-6px_rgba(147,51,234,0.7)] ${
+          open ? "bg-surface text-purple-500 border border-veil/15" : "bg-gradient-to-br from-purple-600 to-indigo-600 text-white"
+        }`}
       >
-        {open ? <FaTimes className="text-xl" /> : <FaCommentDots className="text-2xl" />}
-        {!open && (
-           <span className="absolute inset-0 rounded-full border-2 border-white/30 animate-ping"></span>
-        )}
+        {open ? <FaTimes className="text-lg" /> : <FaCommentDots className="text-2xl" />}
+        {!open && <span className="absolute inset-0 rounded-full border border-purple-400/40 animate-ping"></span>}
       </motion.button>
     </div>
   );
 };
 
+// --- SECCIÓN DE TESTIMONIOS (MARQUEE ANIMADO) ---
+const TestimonialCard = ({ person, copy }) => {
+  const a = TESTIMONIAL_ACCENT[person.color] ?? TESTIMONIAL_ACCENT.purple;
+  return (
+  <div className={`relative w-[340px] md:w-[400px] flex-shrink-0 bg-surface/80 backdrop-blur-xl border border-veil/10 rounded-3xl p-6 mx-4 overflow-hidden group ${a.border} transition-colors duration-300`}>
+    <div className={`absolute -top-16 -right-16 w-40 h-40 ${a.glow} rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none`}></div>
+    <FaCommentDots className={`text-3xl ${a.quote} mb-4`} />
+    <p className="text-ink-soft text-sm leading-relaxed mb-6 relative z-10">"{copy.text}"</p>
+    <div className="flex items-center gap-3 relative z-10">
+      <div className={`w-11 h-11 rounded-full bg-gradient-to-tr ${a.avatar} to-purple-600 flex items-center justify-center font-black text-white text-sm shadow-lg flex-shrink-0`}>
+        {person.initials}
+      </div>
+      <div className="min-w-0">
+        <h5 className="text-ink font-bold text-sm truncate">{person.name}</h5>
+        <p className="text-ink-faint text-xs truncate">{copy.role}</p>
+      </div>
+      <div className="ml-auto flex gap-0.5 text-yellow-400 text-xs">
+        {[...Array(person.rating)].map((_, i) => <FaStar key={i} />)}
+      </div>
+    </div>
+  </div>
+  );
+};
+
+const TestimonialsSection = () => {
+  const { t } = useI18n();
+  const half = Math.ceil(TESTIMONIALS_META.length / 2);
+  const rowA = TESTIMONIALS_META.slice(0, half);
+  const rowB = TESTIMONIALS_META.slice(half);
+
+  return (
+    <section id="testimonios" className="py-24 relative overflow-hidden">
+      <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[500px] h-[500px] bg-cyan-600/10 rounded-full blur-[150px] pointer-events-none"></div>
+
+      <div className="max-w-7xl mx-auto px-6 mb-14 relative z-10">
+        <div className="text-center">
+          <span className="text-purple-400 font-bold tracking-widest uppercase mb-2 text-sm bg-purple-500/10 px-3 py-1 rounded-full border border-purple-500/20">{t.testimonials.label}</span>
+          <h4 className="text-4xl md:text-5xl font-bold mt-4">{t.testimonials.heading}</h4>
+          <p className="text-ink-soft mt-4 max-w-2xl mx-auto">{t.testimonials.sub}</p>
+        </div>
+      </div>
+
+      {/* Difuminado en los bordes */}
+      <div className="absolute inset-y-0 left-0 w-24 md:w-40 bg-gradient-to-r from-page to-transparent z-20 pointer-events-none"></div>
+      <div className="absolute inset-y-0 right-0 w-24 md:w-40 bg-gradient-to-l from-page to-transparent z-20 pointer-events-none"></div>
+
+      <div className="marquee-pause space-y-6 relative z-10">
+        {/* Fila 1 */}
+        <div className="flex w-max animate-marquee">
+          {[...rowA, ...rowA].map((person, i) => <TestimonialCard key={`a-${i}`} person={person} copy={t.testimonials.items[person.key]} />)}
+        </div>
+        {/* Fila 2 (sentido opuesto) */}
+        <div className="flex w-max animate-marquee-reverse">
+          {[...rowB, ...rowB].map((person, i) => <TestimonialCard key={`b-${i}`} person={person} copy={t.testimonials.items[person.key]} />)}
+        </div>
+      </div>
+    </section>
+  );
+};
+
 // --- SECCIÓN DE PRECIOS DINÁMICA ---
 const PricingSection = () => {
-    const [selectedCategory, setSelectedCategory] = useState(null);
+    const { t } = useI18n();
+    const { currency } = useCurrency();
+    // Guardamos solo la clave: al cambiar de idioma la vista sigue siendo válida.
+    const [selectedKey, setSelectedKey] = useState(null);
+    const selectedCategory = selectedKey ? PRICING_META.find(p => p.key === selectedKey) : null;
+    const selectedCopy = selectedKey ? t.pricing.categories[selectedKey] : null;
+
+    // Los mensajes de WhatsApp llevan el precio ya convertido a la moneda del visitante.
+    const quoteLink = (msg, price) =>
+        `${SOCIAL_LINKS.whatsapp}?text=${encodeURIComponent(fill(msg, { price: formatPrice(price, currency) }))}`;
 
     return (
         <section id="planes" className="py-24 px-6 relative min-h-screen flex flex-col justify-center">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-purple-600/10 rounded-full blur-[150px] pointer-events-none"></div>
-            
+
             <div className="max-w-7xl mx-auto relative z-10 w-full">
                 <div className="text-center mb-16">
-                   <span className="text-purple-400 font-bold tracking-widest uppercase mb-2 text-sm bg-purple-500/10 px-3 py-1 rounded-full border border-purple-500/20">Inversión</span>
+                   <span className="text-purple-400 font-bold tracking-widest uppercase mb-2 text-sm bg-purple-500/10 px-3 py-1 rounded-full border border-purple-500/20">{t.pricing.label}</span>
                    <h4 className="text-4xl md:text-5xl font-bold mt-4">
-                       {selectedCategory ? `Opciones: ${selectedCategory.title}` : "Planes a tu medida"}
+                       {selectedCopy ? fill(t.pricing.headingDetail, { category: selectedCopy.title }) : t.pricing.heading}
                    </h4>
-                   <p className="text-gray-400 mt-4 max-w-2xl mx-auto">
-                       {selectedCategory 
-                           ? "Selecciona el nivel de desarrollo que tu proyecto necesita para escalar al siguiente nivel." 
-                           : "Soluciones escalables desarrolladas con las mejores prácticas de la industria. Elige una categoría para ver opciones."}
+                   <p className="text-ink-soft mt-4 max-w-2xl mx-auto">
+                       {selectedCopy ? t.pricing.subDetail : t.pricing.sub}
                    </p>
+                   <div className="mt-6 flex justify-center">
+                       <CurrencySwitcher />
+                   </div>
                 </div>
 
                 <AnimatePresence mode="wait">
                     {!selectedCategory ? (
                         /* VISTA 1: CATEGORÍAS PRINCIPALES */
-                        <motion.div 
+                        <motion.div
                             key="main-categories"
                             initial={{ opacity: 0, x: -30 }}
                             animate={{ opacity: 1, x: 0 }}
@@ -1280,51 +1409,55 @@ const PricingSection = () => {
                             transition={{ duration: 0.4 }}
                             className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center"
                         >
-                            {PRICING_DATA.map((plan, index) => (
-                                <motion.div 
-                                    key={index}
+                            {PRICING_META.map((plan) => {
+                              const copy = t.pricing.categories[plan.key];
+                              const a = PLAN_ACCENT[plan.color] ?? PLAN_ACCENT.purple;
+                              return (
+                                <motion.div
+                                    key={plan.key}
                                     whileHover={{ scale: 1.05, y: -10 }}
                                     className={`relative h-full group ${plan.popular ? 'md:-mt-8 md:mb-8' : ''}`}
                                 >
-                                    {plan.popular && <div className="absolute inset-0 bg-purple-500/20 blur-2xl rounded-3xl animate-pulse"></div>}
-                                    <div className={`absolute inset-0 bg-gradient-to-b from-${plan.color}-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl`}></div>
+                                    {plan.popular && <div className={`absolute inset-0 ${a.glow} blur-2xl rounded-3xl animate-pulse`}></div>}
+                                    <div className={`absolute inset-0 bg-gradient-to-b ${a.grad} to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl`}></div>
 
-                                    <div className={`h-full bg-[#0a0a1a]/80 backdrop-blur-xl border ${plan.popular ? `border-${plan.color}-500 shadow-[0_0_30px_rgba(168,85,247,0.3)]` : 'border-white/10'} p-8 rounded-3xl relative overflow-hidden flex flex-col transition-colors`}>
+                                    <div className={`h-full bg-surface/80 backdrop-blur-xl border ${plan.popular ? `${a.border} shadow-[0_0_30px_rgba(168,85,247,0.3)]` : 'border-veil/10'} p-8 rounded-3xl relative overflow-hidden flex flex-col transition-colors`}>
                                         {plan.popular && (
-                                            <div className={`absolute top-0 right-0 bg-${plan.color}-500 text-white text-[10px] font-bold px-4 py-1.5 rounded-bl-lg uppercase tracking-widest animate-pulse`}>
-                                                Más Popular
+                                            <div className={`absolute top-0 right-0 ${a.badge} text-white text-[10px] font-bold px-4 py-1.5 rounded-bl-lg uppercase tracking-widest animate-pulse`}>
+                                                {t.pricing.popular}
                                             </div>
                                         )}
-                                        <h3 className={`text-2xl font-bold text-${plan.color}-400 mb-1`}>{plan.title}</h3>
-                                        <p className="text-gray-400 text-sm mb-6">{plan.subtitle}</p>
-                                        <div className="mb-6 border-b border-white/10 pb-6 flex items-baseline">
-                                            <span className="text-2xl text-gray-500 font-bold mr-1">Desde S/</span>
-                                            <span className="text-6xl font-black text-white tracking-tighter">{plan.price}</span>
+                                        <h3 className={`text-2xl font-bold ${a.title} mb-1`}>{copy.title}</h3>
+                                        <p className="text-ink-soft text-sm mb-6">{copy.subtitle}</p>
+                                        <div className="mb-6 border-b border-veil/10 pb-6">
+                                            <span className="block text-sm text-ink-faint font-bold uppercase tracking-wider">{t.pricing.from}</span>
+                                            <span className="block text-4xl md:text-5xl font-black text-ink tracking-tighter mt-1 break-words">{formatPrice(plan.price, currency)}</span>
                                         </div>
-                                        <p className="text-gray-300 text-sm mb-8 leading-relaxed h-16">{plan.description}</p>
+                                        <p className="text-ink-soft text-sm mb-8 leading-relaxed h-16">{copy.description}</p>
                                         <ul className="space-y-4 mb-8 flex-grow">
-                                            {plan.features.map((feat, i) => (
-                                                <li key={i} className="flex items-start gap-3 text-sm text-gray-300">
-                                                    <FaCheck className={`text-${plan.color}-500 mt-1 flex-shrink-0 group-hover:scale-125 transition-transform`} />
+                                            {copy.features.map((feat, i) => (
+                                                <li key={i} className="flex items-start gap-3 text-sm text-ink-soft">
+                                                    <FaCheck className={`${a.check} mt-1 flex-shrink-0 group-hover:scale-125 transition-transform`} />
                                                     <span>{feat}</span>
                                                 </li>
                                             ))}
                                         </ul>
-                                        <NeonButton 
-                                            onClick={() => setSelectedCategory(plan)}
-                                            primary={plan.popular} 
+                                        <NeonButton
+                                            onClick={() => setSelectedKey(plan.key)}
+                                            primary={plan.popular}
                                             className="w-full justify-center mt-auto"
                                             icon={<FaEye/>}
                                         >
-                                            {plan.actionText}
+                                            {copy.actionText}
                                         </NeonButton>
                                     </div>
                                 </motion.div>
-                            ))}
+                              );
+                            })}
                         </motion.div>
                     ) : (
                         /* VISTA 2: SUB-NIVELES (TIERS) */
-                        <motion.div 
+                        <motion.div
                             key="detail-tiers"
                             initial={{ opacity: 0, x: 30 }}
                             animate={{ opacity: 1, x: 0 }}
@@ -1332,84 +1465,371 @@ const PricingSection = () => {
                             transition={{ duration: 0.4 }}
                             className="w-full"
                         >
-                            <button 
-                                onClick={() => setSelectedCategory(null)} 
-                                className="text-gray-400 hover:text-white flex items-center gap-2 mb-8 transition-colors group px-4 py-2 bg-white/5 rounded-full border border-white/10 mx-auto md:mx-0"
+                            <button
+                                onClick={() => setSelectedKey(null)}
+                                className="text-ink-soft hover:text-ink flex items-center gap-2 mb-8 transition-colors group px-4 py-2 bg-veil/5 rounded-full border border-veil/10 mx-auto md:mx-0"
                             >
-                                <FaChevronLeft className="group-hover:-translate-x-1 transition-transform"/> Volver a Categorías
+                                <FaChevronLeft className="group-hover:-translate-x-1 transition-transform"/> {t.pricing.back}
                             </button>
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
-                                {selectedCategory.tiers.map((tier, index) => (
-                                    <motion.div 
-                                        key={index}
+                                {selectedCategory.tiers.map((tier) => {
+                                  const tierCopy = t.pricing.tiers[tier.key];
+                                  const ta = PLAN_ACCENT[tier.color] ?? PLAN_ACCENT.purple;
+                                  return (
+                                    <motion.div
+                                        key={tier.key}
                                         whileHover={{ scale: 1.05, y: -10 }}
                                         className={`relative h-full group ${tier.popular ? 'md:-mt-8 md:mb-8' : ''}`}
                                     >
-                                        {tier.popular && <div className={`absolute inset-0 bg-${tier.color}-500/20 blur-2xl rounded-3xl animate-pulse`}></div>}
-                                        <div className={`absolute inset-0 bg-gradient-to-b from-${tier.color}-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl`}></div>
+                                        {tier.popular && <div className={`absolute inset-0 ${ta.glow} blur-2xl rounded-3xl animate-pulse`}></div>}
+                                        <div className={`absolute inset-0 bg-gradient-to-b ${ta.grad} to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl`}></div>
 
-                                        <div className={`h-full bg-[#0a0a1a]/80 backdrop-blur-xl border ${tier.popular ? `border-${tier.color}-500 shadow-[0_0_30px_rgba(168,85,247,0.3)]` : 'border-white/10'} p-8 rounded-3xl relative overflow-hidden flex flex-col transition-colors`}>
+                                        <div className={`h-full bg-surface/80 backdrop-blur-xl border ${tier.popular ? `${ta.border} shadow-[0_0_30px_rgba(168,85,247,0.3)]` : 'border-veil/10'} p-8 rounded-3xl relative overflow-hidden flex flex-col transition-colors`}>
                                             {tier.popular && (
-                                                <div className={`absolute top-0 right-0 bg-${tier.color}-500 text-white text-[10px] font-bold px-4 py-1.5 rounded-bl-lg uppercase tracking-widest animate-pulse`}>
-                                                    Recomendado
+                                                <div className={`absolute top-0 right-0 ${ta.badge} text-white text-[10px] font-bold px-4 py-1.5 rounded-bl-lg uppercase tracking-widest animate-pulse`}>
+                                                    {t.pricing.recommended}
                                                 </div>
                                             )}
-                                            <h3 className={`text-2xl font-bold text-${tier.color}-400 mb-1`}>{tier.title}</h3>
-                                            <p className="text-gray-400 text-sm mb-6">{tier.subtitle}</p>
-                                            <div className="mb-6 border-b border-white/10 pb-6 flex items-baseline">
-                                                <span className="text-2xl text-gray-500 font-bold mr-1">S/</span>
-                                                <span className="text-6xl font-black text-white tracking-tighter">{tier.price}</span>
+                                            <h3 className={`text-2xl font-bold ${ta.title} mb-1`}>{tierCopy.title}</h3>
+                                            <p className="text-ink-soft text-sm mb-6">{tierCopy.subtitle}</p>
+                                            <div className="mb-6 border-b border-veil/10 pb-6">
+                                                <span className="block text-4xl md:text-5xl font-black text-ink tracking-tighter break-words">{formatPrice(tier.price, currency)}</span>
                                             </div>
-                                            <p className="text-gray-300 text-sm mb-8 leading-relaxed h-16">{tier.description}</p>
+                                            <p className="text-ink-soft text-sm mb-8 leading-relaxed h-16">{tierCopy.description}</p>
                                             <ul className="space-y-4 mb-8 flex-grow">
-                                                {tier.features.map((feat, i) => (
-                                                    <li key={i} className="flex items-start gap-3 text-sm text-gray-300">
-                                                        <FaCheck className={`text-${tier.color}-500 mt-1 flex-shrink-0 group-hover:scale-125 transition-transform`} />
+                                                {tierCopy.features.map((feat, i) => (
+                                                    <li key={i} className="flex items-start gap-3 text-sm text-ink-soft">
+                                                        <FaCheck className={`${ta.check} mt-1 flex-shrink-0 group-hover:scale-125 transition-transform`} />
                                                         <span>{feat}</span>
                                                     </li>
                                                 ))}
                                             </ul>
-                                            <NeonButton 
-                                                href={`${SOCIAL_LINKS.whatsapp}?text=${encodeURIComponent(tier.whatsappMsg)}`}
-                                                primary={tier.popular} 
+                                            <NeonButton
+                                                href={quoteLink(tierCopy.whatsappMsg, tier.price)}
+                                                primary={tier.popular}
                                                 className="w-full justify-center mt-auto"
                                                 icon={<FaWhatsapp/>}
                                             >
-                                                Cotizar Plan
+                                                {t.pricing.quote}
                                             </NeonButton>
                                         </div>
                                     </motion.div>
-                                ))}
+                                  );
+                                })}
                             </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
+
+                {currency !== "PEN" && (
+                    <p className="text-ink-faint text-xs text-center max-w-2xl mx-auto mt-10 leading-relaxed">
+                        {t.pricing.approxNote}
+                    </p>
+                )}
             </div>
         </section>
     );
 };
 
+// --- SELECTOR DE IDIOMA ---
+
+// Los id de sección son fijos: no se traducen ni cambian con el idioma.
+const SECTION_IDS = ['servicios', 'proyectos', 'testimonios', 'planes', 'trayectoria', 'contacto'];
+
+// Conservamos el índice original para no desalinear las etiquetas de t.nav.links
+// cuando alguna sección está oculta.
+const NAV_SECTIONS = SECTION_IDS
+  .map((id, i) => ({ id, i }))
+  .filter(({ id }) => SHOW_TESTIMONIALS || id !== 'testimonios');
+
+const LanguageSwitcher = ({ className = "" }) => {
+  const { lang, t, changeLang } = useI18n();
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  // Cierra al hacer clic fuera o con Escape.
+  useEffect(() => {
+    if (!open) return;
+    const onPointer = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('mousedown', onPointer);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onPointer);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  const current = LANGUAGES.find((l) => l.code === lang);
+
+  return (
+    <div ref={ref} className={`relative ${className}`}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        aria-label={t.lang.switcherAria}
+        aria-expanded={open}
+        className="flex items-center gap-2 bg-veil/5 hover:bg-veil/10 border border-veil/10 hover:border-purple-500/40 px-3 py-2 rounded-full text-sm font-bold transition-all"
+      >
+        <FaGlobe className="text-purple-400" />
+        <span className="uppercase tracking-wider">{lang}</span>
+        <FaChevronDown className={`text-[10px] text-ink/40 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.ul
+            initial={{ opacity: 0, y: -8, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.96 }}
+            transition={{ duration: 0.15 }}
+            className="absolute right-0 top-full mt-2 w-52 max-h-[60vh] overflow-y-auto custom-scrollbar bg-surface/95 backdrop-blur-xl border border-purple-500/25 rounded-2xl shadow-[0_0_40px_-10px_rgba(168,85,247,0.5)] p-1.5 z-50"
+          >
+            {LANGUAGES.map((l) => (
+              <li key={l.code}>
+                <button
+                  onClick={() => { changeLang(l.code); setOpen(false); }}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors text-left ${
+                    l.code === lang ? 'bg-purple-600/25 text-white' : 'text-ink-soft hover:bg-veil/5 hover:text-ink'
+                  }`}
+                >
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-purple-400 w-6 flex-shrink-0">{l.code}</span>
+                  <span className="flex-grow truncate">{l.native}</span>
+                  {l.code === lang && <FaCheck className="text-purple-400 text-xs flex-shrink-0" />}
+                </button>
+              </li>
+            ))}
+          </motion.ul>
+        )}
+      </AnimatePresence>
+
+      <span className="sr-only">{current?.native}</span>
+    </div>
+  );
+};
+
+const ThemeToggle = ({ className = "" }) => {
+  const { t } = useI18n();
+  const { theme } = useTheme();
+  const { toggleTheme } = useTheme();
+  const goingLight = theme === "dark";
+
+  return (
+    <button
+      onClick={toggleTheme}
+      aria-label={goingLight ? t.theme.toLight : t.theme.toDark}
+      title={goingLight ? t.theme.toLight : t.theme.toDark}
+      className={`relative w-10 h-10 flex items-center justify-center rounded-full bg-veil/5 hover:bg-veil/10 border border-veil/10 hover:border-purple-500/40 transition-all ${className}`}
+    >
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.span
+          key={theme}
+          initial={{ opacity: 0, rotate: -90, scale: 0.6 }}
+          animate={{ opacity: 1, rotate: 0, scale: 1 }}
+          exit={{ opacity: 0, rotate: 90, scale: 0.6 }}
+          transition={{ duration: 0.2 }}
+          className="absolute inset-0 flex items-center justify-center"
+        >
+          {goingLight ? <FaSun className="text-yellow-400 text-lg" /> : <FaMoon className="text-purple-400 text-lg" />}
+        </motion.span>
+      </AnimatePresence>
+    </button>
+  );
+};
+
+// Los precios base están en soles; esto solo cambia cómo se muestran.
+const CurrencySwitcher = () => {
+  const { t } = useI18n();
+  const { currency, changeCurrency } = useCurrency();
+
+  return (
+    <div className="inline-flex items-center gap-2 bg-veil/5 border border-veil/10 rounded-full px-2 py-1.5">
+      <FaCoins className="text-purple-400 ml-1.5 flex-shrink-0" aria-hidden="true" />
+      <label htmlFor="currency" className="sr-only">{t.currency.switcherAria}</label>
+      <select
+        id="currency"
+        value={currency}
+        onChange={(e) => changeCurrency(e.target.value)}
+        aria-label={t.currency.switcherAria}
+        className="bg-transparent text-ink text-sm font-bold pr-1 focus:outline-none focus:ring-2 focus:ring-purple-500/50 rounded cursor-pointer"
+      >
+        {Object.keys(CURRENCIES).map((code) => (
+          <option key={code} value={code} className="bg-surface text-ink">
+            {code}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+};
+
+// Se muestra solo en la primera visita (después, la elección vive en localStorage).
+const LanguageModal = ({ onClose }) => {
+  const { lang, t, changeLang } = useI18n();
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100001] bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+    >
+      <motion.div
+        initial={{ scale: 0.92, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.92, opacity: 0 }}
+        className="w-full max-w-lg bg-surface/95 border border-purple-500/30 rounded-3xl p-6 md:p-8 shadow-[0_0_60px_-15px_rgba(168,85,247,0.6)] relative overflow-hidden"
+      >
+        <div className="absolute -top-24 -right-24 w-56 h-56 bg-purple-600/20 rounded-full blur-[100px] pointer-events-none"></div>
+        <div className="absolute -bottom-24 -left-24 w-56 h-56 bg-cyan-600/20 rounded-full blur-[100px] pointer-events-none"></div>
+
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-2">
+            <FaGlobe className="text-2xl text-purple-400" />
+            <h2 className="text-2xl md:text-3xl font-black text-ink">{t.lang.modalTitle}</h2>
+          </div>
+          <p className="text-ink-soft text-sm mb-6">{t.lang.modalSubtitle}</p>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-6 max-h-[45vh] overflow-y-auto custom-scrollbar pr-1">
+            {LANGUAGES.map((l) => (
+              <button
+                key={l.code}
+                onClick={() => changeLang(l.code)}
+                className={`relative flex flex-col items-start gap-0.5 px-3 py-3 rounded-2xl border text-left transition-all ${
+                  l.code === lang
+                    ? 'bg-purple-600/25 border-purple-500 text-ink shadow-[0_0_20px_-5px_rgba(168,85,247,0.6)]'
+                    : 'bg-veil/5 border-veil/10 text-ink-soft hover:border-veil/30 hover:bg-veil/10'
+                }`}
+              >
+                <span className="font-mono text-[10px] uppercase tracking-widest text-purple-400">{l.code}</span>
+                <span className="font-bold text-sm truncate w-full">{l.native}</span>
+                {l.code === lang && (
+                  <span className="absolute top-2 right-2 text-[9px] font-bold uppercase tracking-wider text-purple-300">
+                    {t.lang.detected}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          <NeonButton onClick={onClose} icon={<FaCheck />} className="w-full justify-center">
+            {t.lang.confirm}
+          </NeonButton>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
+// --- MENÚ MÓVIL (FULLSCREEN, FUERA DEL NAV) ---
+const MobileMenu = ({ open, onClose, onNavigate }) => {
+  const { t } = useI18n();
+
+  // Bloquea scroll del body mientras el menú está abierto
+  useEffect(() => {
+    if (open) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = prev; };
+    }
+  }, [open]);
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.25 }}
+          className="fixed inset-0 z-[100000] md:hidden flex flex-col bg-page/95 backdrop-blur-2xl overflow-hidden"
+        >
+          {/* Blobs de fondo */}
+          <div className="absolute -top-24 -right-24 w-72 h-72 bg-purple-600/25 rounded-full blur-[120px] pointer-events-none"></div>
+          <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-cyan-600/20 rounded-full blur-[120px] pointer-events-none"></div>
+
+          {/* Cabecera */}
+          <div className="relative z-10 flex items-center justify-between px-6 py-4 border-b border-veil/10">
+            <div className="flex items-center gap-2 font-bold text-lg">
+              <div className="w-9 h-9 rounded-xl overflow-hidden border-2 border-purple-500/50">
+                <img src="/mi-foto.png" alt="Cesar Neyra" className="w-full h-full object-cover" />
+              </div>
+              <span>NeyraDev</span>
+            </div>
+            <button aria-label={t.nav.closeMenu} onClick={onClose} className="w-11 h-11 flex items-center justify-center rounded-full bg-veil/5 border border-veil/10 text-ink/70 hover:text-ink hover:bg-veil/10 transition-colors">
+              <FaTimes className="text-xl" />
+            </button>
+          </div>
+
+          {/* Items */}
+          <nav className="relative z-10 flex-grow flex flex-col justify-center px-6 gap-1">
+            {NAV_SECTIONS.map(({ id, i }, index) => (
+              <motion.button
+                key={id}
+                onClick={() => onNavigate(id)}
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.08 + index * 0.06 }}
+                className="group flex items-center justify-between py-4 border-b border-veil/5 text-left"
+              >
+                <span className="flex items-baseline gap-4">
+                  <span className="font-mono text-xs text-purple-500/70 w-6">0{index + 1}</span>
+                  <span className="text-3xl font-black text-ink group-hover:text-purple-400 group-active:text-purple-400 transition-colors">{t.nav.links[i]}</span>
+                </span>
+                <FaChevronRight className="text-ink/20 group-hover:text-purple-400 group-hover:translate-x-1 transition-all" />
+              </motion.button>
+            ))}
+          </nav>
+
+          {/* Footer: CTA + redes */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="relative z-10 px-6 pb-10 pt-4 space-y-6"
+          >
+            <div className="flex justify-center items-center gap-3">
+              <ThemeToggle />
+              <LanguageSwitcher />
+            </div>
+            <a
+              href={SOCIAL_LINKS.whatsapp}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center justify-center gap-2 w-full py-4 rounded-full bg-green-600 hover:bg-green-500 text-white font-bold shadow-[0_0_25px_rgba(34,197,94,0.4)] transition-colors"
+            >
+              <FaWhatsapp className="text-xl" /> {t.nav.whatsappCta}
+            </a>
+            <div className="flex justify-center gap-8">
+              <a href={SOCIAL_LINKS.github} target="_blank" rel="noreferrer" className="text-3xl text-ink-soft hover:text-ink transition-colors"><FaGithub /></a>
+              <a href={SOCIAL_LINKS.linkedin} target="_blank" rel="noreferrer" className="text-3xl text-ink-soft hover:text-blue-500 transition-colors"><FaLinkedin /></a>
+              <a href={SOCIAL_LINKS.instagram} target="_blank" rel="noreferrer" className="text-3xl text-ink-soft hover:text-pink-500 transition-colors"><FaInstagram /></a>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
 // --- APP PRINCIPAL ---
 function App() {
+  const { t, lang } = useI18n();
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
   const [menuOpen, setMenuOpen] = useState(false);
-  const [showCVModal, setShowCVModal] = useState(false);
-  const [showSplash, setShowSplash] = useState(true); 
+  const [cvTheme, setCvTheme] = useState(null);
+  const [showSplash, setShowSplash] = useState(SHOULD_SHOW_SPLASH);
+  // Solo en la primera visita: si ya hay idioma guardado, no se pregunta.
+  const [showLangModal, setShowLangModal] = useState(!HAS_CHOSEN_LANG);
+  const closeSplash = useCallback(() => setShowSplash(false), []);
+  const openCVModal = () => setCvTheme(CV_THEMES[Math.floor(Math.random() * CV_THEMES.length)]);
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
 
   const [selectedProject, setSelectedProject] = useState(null);
-  const [activeFilter, setActiveFilter] = useState("Todos");
+  const [activeFilter, setActiveFilter] = useState("todos");
 
+  const blockScroll = showSplash || showLangModal;
   useEffect(() => {
-    if (showSplash) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'auto';
-    }
-  }, [showSplash]);
+    document.body.style.overflow = blockScroll ? 'hidden' : 'auto';
+  }, [blockScroll]);
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -1418,7 +1838,7 @@ function App() {
     };
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+  }, [mouseX, mouseY]);
 
   const scrollToSection = (id) => {
     setMenuOpen(false);
@@ -1426,16 +1846,29 @@ function App() {
     if (element) element.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const filteredProjects = activeFilter === "Todos" 
-    ? PROJECTS_DATA 
-    : PROJECTS_DATA.filter(p => p.category === activeFilter);
+  const isRuag = (p) => p.ruag || p.title.toLowerCase().startsWith("ruag");
+  const filteredProjects = (activeFilter === "todos"
+    ? PROJECTS_META
+    : PROJECTS_META.filter(p => p.category === activeFilter)
+  )
+    // Todo lo de Ruag primero (orden estable dentro de cada grupo)
+    .slice()
+    .sort((a, b) => (isRuag(b) ? 1 : 0) - (isRuag(a) ? 1 : 0));
+
+  // Une la ficha del proyecto (iconos, imágenes) con sus textos del idioma activo.
+  const withCopy = (project) => ({ ...project, copy: t.projects.items[project.key] });
 
   return (
-    <div className="relative min-h-screen bg-[#030014] text-white font-sans selection:bg-purple-500 selection:text-white overflow-x-hidden cursor-none md:cursor-auto">
+    <div className="relative min-h-screen bg-page text-ink font-sans selection:bg-purple-500 selection:text-ink overflow-x-hidden">
       
-      {/* SPLASH SCREEN */}
+      {/* Pantalla de entrada. Sin AnimatePresence a propósito: se desmonta por
+          temporizador, no al terminar una animación de salida. Si esa animación
+          se quedase a medias, taparía la web entera. */}
+      {showSplash && <SplashScreen onComplete={closeSplash} />}
+
+      {/* Elección de idioma: solo la primera visita, y después del splash */}
       <AnimatePresence>
-        {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
+        {!showSplash && showLangModal && <LanguageModal onClose={() => setShowLangModal(false)} />}
       </AnimatePresence>
 
       <CustomCursor />
@@ -1443,18 +1876,18 @@ function App() {
       <SmartAssistant />
       
       <AnimatePresence>
-        {selectedProject && <ProjectModal project={selectedProject} onClose={() => setSelectedProject(null)} />}
-        {showCVModal && <CVInstallerModal onClose={() => setShowCVModal(false)} />}
+        {selectedProject && <ProjectModal project={withCopy(selectedProject)} onClose={() => setSelectedProject(null)} />}
+        {cvTheme && <CVInstallerModal theme={cvTheme} onClose={() => setCvTheme(null)} />}
       </AnimatePresence>
 
       <motion.div style={{ scaleX }} className="fixed top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-500 origin-left z-[100] shadow-[0_0_20px_rgba(168,85,247,0.8)]" />
       
-      <div className="fixed inset-0 z-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150"></div>
-      <motion.div style={{ x: mouseX, y: mouseY }} className="fixed top-0 left-0 w-[500px] h-[500px] bg-purple-600/15 rounded-full blur-[120px] z-[-1] pointer-events-none mix-blend-screen"/>
+      <div className="fixed inset-0 z-0 bg-noise opacity-20 brightness-100 contrast-150"></div>
+      <motion.div style={{ x: mouseX, y: mouseY }} className="pointer-glow fixed top-0 left-0 w-[500px] h-[500px] bg-purple-600/15 rounded-full blur-[120px] z-[-1] pointer-events-none"/>
       <BackgroundParticles />
 
       {/* --- NAVBAR --- */}
-      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center backdrop-blur-md bg-[#030014]/80 border-b border-white/5">
+      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center backdrop-blur-md bg-page/80 border-b border-veil/5">
         <motion.div 
           initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }}
           className="text-xl md:text-2xl font-bold flex items-center gap-2 cursor-pointer z-50 group"
@@ -1466,10 +1899,10 @@ function App() {
           <span className="tracking-tight group-hover:text-purple-400 transition-colors">NeyraDev</span>
         </motion.div>
 
-        <div className="hidden md:flex gap-8 text-sm font-medium text-gray-300">
-          {['Servicios', 'Proyectos', 'Planes', 'Trayectoria', 'Contacto'].map((item) => (
-            <button key={item} onClick={() => scrollToSection(item.toLowerCase())} className="hover:text-purple-400 transition-colors relative group">
-              {item}
+        <div className="hidden md:flex gap-8 text-sm font-medium text-ink-soft">
+          {NAV_SECTIONS.map(({ id, i }) => (
+            <button key={id} onClick={() => scrollToSection(id)} className="hover:text-purple-400 transition-colors relative group">
+              {t.nav.links[i]}
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-purple-500 transition-all group-hover:w-full"></span>
             </button>
           ))}
@@ -1484,39 +1917,24 @@ function App() {
               <a key={i} href={item.link} target="_blank" rel="noreferrer" className="hover:text-purple-400 hover:-translate-y-1 transition-all text-xl"><item.icon/></a>
           ))}
           
-          <a href={SOCIAL_LINKS.whatsapp} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-white/5 hover:bg-green-600/20 hover:text-green-400 border border-white/10 px-4 py-2 rounded-full text-sm font-bold transition-all ml-2 group">
+          <a href={SOCIAL_LINKS.whatsapp} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-veil/5 hover:bg-green-600/20 hover:text-green-400 border border-veil/10 px-4 py-2 rounded-full text-sm font-bold transition-all ml-2 group">
              <FaWhatsapp className="text-lg group-hover:scale-110 transition-transform"/> 
-             <span className="hidden lg:inline">Chat</span>
+             <span className="hidden lg:inline">{t.nav.chat}</span>
           </a>
         </div>
 
-        <div className="md:hidden z-[99999] p-2 relative cursor-pointer" onClick={() => setMenuOpen(!menuOpen)}>
+        <ThemeToggle className="hidden md:flex ml-2" />
+        <LanguageSwitcher className="hidden md:block" />
+
+        <ThemeToggle className="md:hidden" />
+
+        <button aria-label={t.nav.openMenu} className="md:hidden z-[99999] p-2 relative cursor-pointer text-ink" onClick={() => setMenuOpen(true)}>
             <FaBars className="text-2xl relative z-[99999]"/>
-        </div>
-
-        {/* --- MENÚ MÓVIL --- */}
-        <AnimatePresence>
-            {menuOpen && (
-                <motion.div 
-                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}
-                    className="fixed inset-0 bg-[#030014] z-[99998] flex flex-col items-center justify-center gap-8 md:hidden"
-                >
-                    <button onClick={() => setMenuOpen(false)} className="absolute top-6 right-6 p-4 text-white/50 hover:text-white z-[99999]">
-                        <FaTimes className="text-4xl"/>
-                    </button>
-
-                    {['Servicios', 'Proyectos', 'Planes', 'Trayectoria', 'Contacto'].map((item) => (
-                        <button key={item} onClick={() => scrollToSection(item.toLowerCase())} className="text-3xl font-bold hover:text-purple-400 transition-colors">{item}</button>
-                    ))}
-                    <div className="flex gap-8 mt-8">
-                          <a href={SOCIAL_LINKS.github} className="text-4xl text-gray-400 hover:text-white"><FaGithub/></a>
-                          <a href={SOCIAL_LINKS.linkedin} className="text-4xl text-gray-400 hover:text-blue-500"><FaLinkedin/></a>
-                          <a href={SOCIAL_LINKS.instagram} className="text-4xl text-gray-400 hover:text-pink-500"><FaInstagram/></a>
-                    </div>
-                </motion.div>
-            )}
-        </AnimatePresence>
+        </button>
       </nav>
+
+      {/* --- MENÚ MÓVIL (fuera del nav: fixed relativo al viewport) --- */}
+      <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} onNavigate={scrollToSection} />
 
       {/* --- HERO SECTION --- */}
       <section id="hero" className="min-h-screen flex flex-col justify-center items-center text-center px-4 relative pt-20 overflow-hidden">
@@ -1534,71 +1952,74 @@ function App() {
            <div className="relative z-10 p-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full">
                <img 
                 src="/mi-foto.png" 
-                className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-[#030014] shadow-2xl object-cover"
+                className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-page shadow-2xl object-cover"
                 alt="Cesar Neyra"
                />
            </div>
            <motion.div 
              animate={{ y: [0, -10, 0] }}
              transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-             className="absolute -bottom-2 -right-2 bg-green-500 text-[#030014] text-xs font-bold px-3 py-1 rounded-full border-4 border-[#030014] z-20"
+             className="absolute -bottom-2 -right-2 bg-green-500 text-[#030014] text-xs font-bold px-3 py-1 rounded-full border-4 border-page z-20"
            >
-             OPEN TO WORK
+             {t.hero.badge}
            </motion.div>
         </motion.div>
 
-        <h2 className="text-lg md:text-2xl text-gray-400 font-medium mb-6 flex justify-center items-center gap-2 bg-white/5 px-6 py-2 rounded-full border border-white/5 backdrop-blur-sm">
-          <span>👋 Hola, soy</span>
-          <TypewriterText texts={["Ingeniero de Software", "Desarrollador Full Stack", "Especialista Web & Móvil"]} />
+        <h2 className="text-lg md:text-2xl text-ink-soft font-medium mb-6 flex justify-center items-center gap-2 bg-veil/5 px-6 py-2 rounded-full border border-veil/5 backdrop-blur-sm">
+          <span>{t.hero.greeting}</span>
+          <TypewriterText key={lang} texts={t.hero.roles} />
         </h2>
 
         <h1 className="text-5xl md:text-8xl font-black mb-8 leading-tight tracking-tight relative z-10">
-          Creo Software <br/>
+          {t.hero.titleLine} <br/>
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-fuchsia-400 to-indigo-500 drop-shadow-[0_0_15px_rgba(168,85,247,0.3)]">
-            Inteligente
+            {t.hero.titleAccent}
           </span>
         </h1>
 
-        <p className="max-w-2xl text-gray-400 text-base md:text-xl mb-10 leading-relaxed px-4">
-          Transformo necesidades de negocio en código de alto rendimiento. <br className="hidden md:block"/>
-          Especializado en <span className="text-purple-400 font-bold"> Escalabilidad</span>, <span className="text-cyan-400 font-bold">Seguridad</span> y <span className="text-pink-400 font-bold">Experiencia de Usuario</span>.
+        <p className="max-w-2xl text-ink-soft text-base md:text-xl mb-10 leading-relaxed px-4">
+          {t.hero.desc} <br className="hidden md:block"/>
+          {t.hero.specialtiesIntro}{" "}
+          <span className="text-purple-400 font-bold">{t.hero.specialties[0]}</span>,{" "}
+          <span className="text-cyan-400 font-bold">{t.hero.specialties[1]}</span>,{" "}
+          <span className="text-pink-400 font-bold">{t.hero.specialties[2]}</span>.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-5 w-full sm:w-auto px-6 z-10">
-          <NeonButton onClick={() => setShowCVModal(true)} icon={<FaDownload/>}>Descargar CV</NeonButton>
-          <NeonButton onClick={() => scrollToSection('proyectos')} primary={false} icon={<FaExternalLinkAlt/>}>Ver Portafolio</NeonButton>
+          <NeonButton onClick={openCVModal} icon={<FaDownload/>}>{t.hero.ctaCV}</NeonButton>
+          <NeonButton onClick={() => scrollToSection('proyectos')} primary={false} icon={<FaExternalLinkAlt/>}>{t.hero.ctaPortfolio}</NeonButton>
         </div>
         
-        <div className="mt-16 grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-16 border-t border-white/10 pt-8">
+        <div className="mt-16 grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-16 border-t border-veil/10 pt-8">
             <div className="text-center">
-                <div className="text-3xl font-black text-white flex justify-center"><Counter from={0} to={3}/>+</div>
-                <div className="text-xs text-gray-500 uppercase tracking-widest">Años Exp.</div>
+                <div className="text-3xl font-black text-ink flex justify-center"><Counter from={0} to={3}/>+</div>
+                <div className="text-xs text-ink-faint uppercase tracking-widest">{t.hero.stats.years}</div>
             </div>
             <div className="text-center">
-                <div className="text-3xl font-black text-white flex justify-center"><Counter from={0} to={15}/>+</div>
-                <div className="text-xs text-gray-500 uppercase tracking-widest">Proyectos Exitosos</div>
+                <div className="text-3xl font-black text-ink flex justify-center"><Counter from={0} to={15}/>+</div>
+                <div className="text-xs text-ink-faint uppercase tracking-widest">{t.hero.stats.projects}</div>
             </div>
             <div className="text-center hidden md:block">
-                <div className="text-3xl font-black text-white flex justify-center">100%</div>
-                <div className="text-xs text-gray-500 uppercase tracking-widest">Clientes Satisfechos</div>
+                <div className="text-3xl font-black text-ink flex justify-center">100%</div>
+                <div className="text-xs text-ink-faint uppercase tracking-widest">{t.hero.stats.clients}</div>
             </div>
         </div>
       </section>
 
       {/* --- TECH STACK (Infinito) --- */}
-      <section className="py-10 bg-gradient-to-r from-[#030014] via-purple-900/10 to-[#030014] border-y border-purple-500/20 overflow-hidden relative">
-         <div className="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-[#030014] to-transparent z-10"></div>
-         <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-[#030014] to-transparent z-10"></div>
+      <section className="py-10 bg-gradient-to-r from-page via-purple-500/5 to-page border-y border-purple-500/20 overflow-hidden relative">
+         <div className="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-page to-transparent z-10"></div>
+         <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-page to-transparent z-10"></div>
          
          <motion.div 
            animate={{ x: [0, -1000] }}
            transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
-           className="flex gap-16 w-max opacity-60 grayscale hover:grayscale-0 transition-all duration-500 px-4"
+           className="flex gap-16 w-max text-ink-soft opacity-70 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500 px-4"
          >
             {[...Array(2)].map((_, i) => (
                 <React.Fragment key={i}>
                     <FaReact className="text-5xl hover:text-cyan-400 hover:scale-110 transition-transform" title="React"/>
-                    <SiNextdotjs className="text-5xl hover:text-white hover:scale-110 transition-transform" title="Next.js"/>
+                    <SiNextdotjs className="text-5xl hover:text-ink hover:scale-110 transition-transform" title="Next.js"/>
                     <SiTypescript className="text-5xl hover:text-blue-500 hover:scale-110 transition-transform" title="TypeScript"/>
                     <SiSupabase className="text-5xl hover:text-green-400 hover:scale-110 transition-transform" title="Supabase"/>
                     <FaNodeJs className="text-5xl hover:text-green-500 hover:scale-110 transition-transform" title="Node.js"/>
@@ -1617,95 +2038,105 @@ function App() {
       <section id="servicios" className="py-24 px-6 relative">
         <div className="max-w-7xl mx-auto">
            <div className="mb-16 text-center">
-              <span className="text-purple-400 font-bold tracking-widest uppercase mb-2 text-sm bg-purple-500/10 px-3 py-1 rounded-full border border-purple-500/20">Mis Servicios</span>
-              <h4 className="text-4xl md:text-5xl font-bold mt-4">Soluciones Digitales 360°</h4>
+              <span className="text-purple-400 font-bold tracking-widest uppercase mb-2 text-sm bg-purple-500/10 px-3 py-1 rounded-full border border-purple-500/20">{t.services.label}</span>
+              <h4 className="text-4xl md:text-5xl font-bold mt-4">{t.services.heading}</h4>
            </div>
 
            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {SERVICES_DATA.map((service, index) => (
-                <Card key={index} color={service.color}>
+              {SERVICES_META.map((service) => {
+                const copy = t.services.items[service.key];
+                return (
+                <Card key={service.key} color={service.color}>
                   <div className={`w-14 h-14 bg-${service.color}-500/20 text-${service.color}-400 rounded-2xl flex items-center justify-center text-3xl mb-6 shadow-lg shadow-${service.color}-500/10`}>
                     {service.icon}
                   </div>
-                  <h5 className="text-2xl font-bold mb-3">{service.title}</h5>
+                  <h5 className="text-2xl font-bold mb-3">{copy.title}</h5>
                   
                   {/* Descripción Dual */}
                   <div className="space-y-4 mb-6">
-                      <p className="text-white text-base leading-relaxed">{service.descSimple}</p>
-                      <p className="text-gray-400 text-xs font-mono border-l-2 border-white/20 pl-3 italic">
-                         <span className="font-bold text-gray-300 not-italic">Tech Spec:</span> {service.descTech}
+                      <p className="text-ink text-base leading-relaxed">{copy.descSimple}</p>
+                      <p className="text-ink-soft text-xs font-mono border-l-2 border-veil/20 pl-3 italic">
+                         <span className="font-bold text-ink-soft not-italic">{t.services.techSpec}</span> {copy.descTech}
                       </p>
                   </div>
                   
                   {/* Business Value Highlight */}
-                  <div className="bg-white/5 border-l-2 border-purple-500 p-3 mb-6 rounded-r-lg">
-                    <p className="text-xs text-purple-200 font-medium italic">"{service.businessValue}"</p>
+                  <div className="bg-veil/5 border-l-2 border-purple-500 p-3 mb-6 rounded-r-lg">
+                    <p className="text-xs text-purple-200 font-medium italic">"{copy.businessValue}"</p>
                   </div>
 
-                  <div className="mt-auto pt-4 border-t border-white/5 flex gap-2 flex-wrap">
+                  <div className="mt-auto pt-4 border-t border-veil/5 flex gap-2 flex-wrap">
                       {service.tags.map((tag, i) => (
-                        <span key={i} className="text-xs bg-white/5 px-2 py-1 rounded">{tag}</span>
+                        <span key={i} className="text-xs bg-veil/5 px-2 py-1 rounded">{tag}</span>
                       ))}
                   </div>
                 </Card>
-              ))}
+                );
+              })}
            </div>
         </div>
       </section>
 
       {/* --- PROYECTOS (GALERÍA AVANZADA) --- */}
-      <section id="proyectos" className="py-24 px-6 bg-[#050214]">
+      <section id="proyectos" className="py-24 px-6 bg-page-alt">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6 border-b border-white/10 pb-8">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6 border-b border-veil/10 pb-8">
              <div>
-                <span className="text-purple-400 font-bold tracking-widest uppercase mb-2 text-sm">Portafolio</span>
-                <h4 className="text-3xl md:text-5xl font-bold mt-2">Mis Mejores Trabajos</h4>
-                <p className="text-gray-400 mt-2 text-sm">Proyectos reales con impacto real.</p>
+                <span className="text-purple-400 font-bold tracking-widest uppercase mb-2 text-sm">{t.projects.label}</span>
+                <h4 className="text-3xl md:text-5xl font-bold mt-2">{t.projects.heading}</h4>
+                <p className="text-ink-soft mt-2 text-sm">{t.projects.sub}</p>
              </div>
              
              {/* Filtros */}
              <div className="flex flex-wrap gap-2">
                 {FILTERS.map(filter => (
-                    <button 
+                    <button
                         key={filter}
                         onClick={() => setActiveFilter(filter)}
+                        aria-pressed={activeFilter === filter}
                         className={`px-4 py-2 rounded-full text-sm font-bold transition-all border ${
-                            activeFilter === filter 
-                            ? 'bg-purple-600 border-purple-500 text-white shadow-[0_0_15px_rgba(168,85,247,0.5)]' 
-                            : 'bg-transparent border-white/10 text-gray-400 hover:text-white hover:border-white/30'
+                            activeFilter === filter
+                            ? 'bg-purple-600 border-purple-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.5)]'
+                            : 'bg-veil/5 border-veil/15 text-ink-soft hover:text-ink hover:bg-veil/10 hover:border-veil/40'
                         }`}
                     >
-                        {filter}
+                        {t.projects.filters[filter]}
                     </button>
                 ))}
              </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <AnimatePresence mode='popLayout'>
-            {filteredProjects.map((project) => (
-              <motion.div 
-                layout
-                initial={{ opacity: 0, scale: 0.9 }} 
-                animate={{ opacity: 1, scale: 1 }} 
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.3 }}
-                key={project.id}
+            {/* Sin AnimatePresence: con `mode="popLayout"` las tarjetas arrancaban en
+                opacity 0 y, si la animación de entrada no llegaba a correr, el grid se
+                quedaba en blanco al filtrar. La rejilla se remonta con la clave del
+                filtro y las tarjetas entran escalonadas; el estado final es visible
+                aunque la animación no se ejecute. */}
+            {filteredProjects.map((project, index) => (
+              <motion.div
+                key={`${activeFilter}-${project.key}`}
+                // Solo se anima el desplazamiento, nunca la opacidad: si la
+                // animación no llega a ejecutarse, la tarjeta se ve igual.
+                initial={{ y: 18 }}
+                animate={{ y: 0 }}
+                transition={{ duration: 0.35, delay: Math.min(index * 0.05, 0.3) }}
               >
                   <Card className="!p-0 !overflow-hidden h-full" onClick={() => setSelectedProject(project)}>
                      <div 
                        className={`h-56 bg-gradient-to-br ${project.gradient} flex items-center justify-center relative overflow-hidden rounded-t-2xl -mx-6 -mt-6 mb-6 group-hover:h-60 transition-all duration-500`}
                      >
-                        <div 
-                          className="absolute inset-0 bg-cover bg-center opacity-40 hover:scale-110 transition-transform duration-700"
-                          style={{ backgroundImage: `url(${project.gallery[0]})` }}
-                        ></div>
+                        {project.gallery.length > 0 && (
+                          <div
+                            className="absolute inset-0 bg-cover bg-center opacity-40 hover:scale-110 transition-transform duration-700"
+                            style={{ backgroundImage: `url(${project.gallery[0]})` }}
+                          ></div>
+                        )}
                         <div className="absolute inset-0 bg-black/20 group-hover:bg-black/50 transition-colors z-0"></div> 
                         
                         {/* Overlay con icono de búsqueda */}
                         <div className="absolute inset-0 flex flex-col gap-2 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                            <span className="bg-white/20 backdrop-blur-md px-4 py-2 rounded-full text-white font-bold flex items-center gap-2 text-sm"><FaSearch/> Ver Detalles</span>
-                            <span className="text-[10px] text-gray-300 bg-black/50 px-2 py-1 rounded">Click para ver galería y código</span>
+                            <span className="bg-white/20 backdrop-blur-md px-4 py-2 rounded-full text-white font-bold flex items-center gap-2 text-sm"><FaSearch/> {t.projects.viewDetails}</span>
+                            <span className="text-[10px] text-gray-200 bg-black/50 px-2 py-1 rounded">{t.projects.clickHint}</span>
                         </div>
 
                         <div className="group-hover:opacity-0 transition-opacity duration-300">
@@ -1715,70 +2146,68 @@ function App() {
                      <div className="flex flex-col h-full relative z-10">
                          {project.badge && (
                            <div className="self-start mb-2 bg-purple-600 text-white text-[10px] font-bold px-3 py-1 rounded-full flex items-center gap-1 animate-pulse">
-                             <FaBolt /> {project.badge}
+                             <FaBolt /> {t.projects.badges[project.badge]}
                            </div>
                          )}
-                         <h4 className="text-2xl font-bold text-white mb-1 group-hover:text-purple-400 transition-colors">{project.title}</h4>
-                         <p className="text-purple-400 text-xs font-bold uppercase mb-4">{project.subtitle}</p>
+                         <h4 className="text-2xl font-bold text-ink mb-1 group-hover:text-purple-400 transition-colors">{project.title}</h4>
+                         <p className="text-purple-400 text-xs font-bold uppercase mb-4">{t.projects.items[project.key].subtitle}</p>
                          
                          {/* Resumen corto */}
-                         <p className="text-gray-400 text-sm mb-6 flex-grow line-clamp-3">{project.business.solution}</p>
+                         <p className="text-ink-soft text-sm mb-6 flex-grow line-clamp-3">{t.projects.items[project.key].solution}</p>
                          
-                         <div className="flex gap-2 text-[10px] font-mono text-gray-300 flex-wrap">
-                            {project.tech.stack.slice(0,3).map((tag, i) => (
-                              <span key={i} className="px-2 py-1 bg-white/10 rounded border border-white/20">{tag}</span>
+                         <div className="flex gap-2 text-[10px] font-mono text-ink-soft flex-wrap">
+                            {project.stack.slice(0,3).map((tag, i) => (
+                              <span key={i} className="px-2 py-1 bg-veil/10 rounded border border-veil/20">{tag}</span>
                             ))}
-                            {project.tech.stack.length > 3 && <span className="px-2 py-1 bg-white/10 rounded border border-white/20">+{project.tech.stack.length - 3}</span>}
+                            {project.stack.length > 3 && <span className="px-2 py-1 bg-veil/10 rounded border border-veil/20">+{project.stack.length - 3}</span>}
                          </div>
                      </div>
                   </Card>
               </motion.div>
             ))}
-            </AnimatePresence>
           </div>
           
            <div className="mt-12 flex justify-center md:hidden">
-                 <NeonButton href={SOCIAL_LINKS.github} primary={false} icon={<FaGithub/>}>Ver GitHub</NeonButton>
+                 <NeonButton href={SOCIAL_LINKS.github} primary={false} icon={<FaGithub/>}>{t.projects.viewGithub}</NeonButton>
            </div>
         </div>
       </section>
+
+      {/* --- TESTIMONIOS (apagados: ver SHOW_TESTIMONIALS) --- */}
+      {SHOW_TESTIMONIALS && <TestimonialsSection />}
 
       {/* --- NUEVA SECCIÓN: PLANES DE INVERSIÓN (PRICING DINÁMICO) --- */}
       <PricingSection />
 
       {/* --- TRAYECTORIA --- */}
-      <section id="trayectoria" className="py-24 px-6 relative bg-[#050214]">
+      <section id="trayectoria" className="py-24 px-6 relative bg-page-alt">
           <div className="max-w-4xl mx-auto">
              <div className="text-center mb-16">
-                 <h4 className="text-3xl md:text-4xl font-bold">Mi Trayectoria</h4>
-                 <p className="text-gray-400 mt-2">Evolución constante en cada línea de código</p>
+                 <h4 className="text-3xl md:text-4xl font-bold">{t.timeline.heading}</h4>
+                 <p className="text-ink-soft mt-2">{t.timeline.sub}</p>
              </div>
 
              <div className="space-y-12 relative border-l-2 border-purple-500/20 ml-4 md:ml-10 pl-8 md:pl-12">
-                 
-                 {/* Item 1: RUAG (Actualidad) */}
-                 <motion.div initial={{opacity:0, x:-20}} whileInView={{opacity:1, x:0}} viewport={{once:true}} className="relative">
-                     <div className="absolute -left-[43px] md:-left-[59px] top-0 w-6 h-6 bg-purple-500 rounded-full border-4 border-[#030014] shadow-[0_0_15px_rgba(168,85,247,0.5)]"></div>
-                     <span className="text-purple-400 font-bold font-mono text-sm">2026 - ACTUALIDAD</span>
-                     <h5 className="text-xl font-bold text-white mt-1">Software Engineer en Ruag S.A.C.</h5>
-                     <p className="text-gray-400 text-sm mt-2">Liderando la transformación digital de la empresa. Diseño y desarrollo de arquitectura escalable en <span className="text-white font-bold">Next.js</span> y sincronización en tiempo real con Apps Android nativas.</p>
-                 </motion.div>
-
-                 {/* Item 2: Bodega Jormard */}
-                 <motion.div initial={{opacity:0, x:-20}} whileInView={{opacity:1, x:0}} viewport={{once:true}} transition={{delay:0.2}} className="relative">
-                     <div className="absolute -left-[43px] md:-left-[59px] top-0 w-6 h-6 bg-gray-700 rounded-full border-4 border-[#030014]"></div>
-                     <span className="text-gray-500 font-bold font-mono text-sm">2025 - 2026</span>
-                     <h5 className="text-xl font-bold text-white mt-1">Full Stack Freelance</h5>
-                     <p className="text-gray-400 text-sm mt-2">Creación de ecosistema digital para <span className="text-white font-bold">Bodega Jormard</span>. Implementación de CI/CD, bases de datos en tiempo real con Supabase y arquitectura Serverless.</p>
-                 </motion.div>
-
-                 {/* Item 3: Inicios */}
-                 <motion.div initial={{opacity:0, x:-20}} whileInView={{opacity:1, x:0}} viewport={{once:true}} transition={{delay:0.4}} className="relative">
-                     <div className="absolute -left-[43px] md:-left-[59px] top-0 w-6 h-6 bg-gray-700 rounded-full border-4 border-[#030014]"></div>
-                     <span className="text-gray-500 font-bold font-mono text-sm">2024</span>
-                     <h5 className="text-xl font-bold text-white mt-1">Backend Developer (Legacy Systems)</h5>
-                     <p className="text-gray-400 text-sm mt-2">Mantenimiento y refactorización de sistemas críticos en PHP y Java para <span className="text-white font-bold">Aldia Express</span>. Optimización de consultas SQL complejas.</p>
-                 </motion.div>
+                 {TIMELINE_META.map((entry, i) => {
+                   const copy = t.timeline.items[entry.key];
+                   return (
+                     <motion.div
+                       key={entry.key}
+                       initial={{opacity:0, x:-20}}
+                       whileInView={{opacity:1, x:0}}
+                       viewport={{once:true}}
+                       transition={{delay: i * 0.2}}
+                       className="relative"
+                     >
+                       <div className={`absolute -left-[43px] md:-left-[59px] top-0 w-6 h-6 rounded-full border-4 border-page ${
+                         entry.active ? 'bg-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.5)]' : 'bg-ink-faint'
+                       }`}></div>
+                       <span className={`font-bold font-mono text-sm ${entry.active ? 'text-purple-400' : 'text-ink-faint'}`}>{copy.period}</span>
+                       <h5 className="text-xl font-bold text-ink mt-1">{copy.role}</h5>
+                       <p className="text-ink-soft text-sm mt-2">{copy.desc}</p>
+                     </motion.div>
+                   );
+                 })}
              </div>
           </div>
       </section>
@@ -1800,19 +2229,19 @@ function App() {
                   className="text-left space-y-8"
                 >
                     <div>
-                      <span className="text-purple-400 font-bold tracking-widest uppercase text-sm bg-purple-500/10 px-3 py-1 rounded-full border border-purple-500/20">Contacto</span>
-                      <h2 className="text-4xl md:text-6xl font-black text-white leading-tight mt-4">
-                          Hablemos de tu <br/>
-                          <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-cyan-500 drop-shadow-[0_0_10px_rgba(168,85,247,0.3)]">Próximo Proyecto</span>
+                      <span className="text-purple-400 font-bold tracking-widest uppercase text-sm bg-purple-500/10 px-3 py-1 rounded-full border border-purple-500/20">{t.contact.label}</span>
+                      <h2 className="text-4xl md:text-6xl font-black text-ink leading-tight mt-4">
+                          {t.contact.headingLine} <br/>
+                          <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-cyan-500 drop-shadow-[0_0_10px_rgba(168,85,247,0.3)]">{t.contact.headingAccent}</span>
                       </h2>
                     </div>
-                    <p className="text-lg text-gray-300 leading-relaxed backdrop-blur-sm bg-black/10 p-4 rounded-2xl border border-white/5">
-                        ¿Tienes una idea innovadora o necesitas escalar tu sistema actual? Estoy listo para unirme a tu equipo y aportar valor desde el día uno. Trato directo, sin intermediarios.
+                    <p className="text-lg text-ink-soft leading-relaxed backdrop-blur-sm bg-veil/5 p-4 rounded-2xl border border-veil/10">
+                        {t.contact.desc}
                     </p>
                     
                     <div className="flex flex-wrap gap-4 pt-2">
-                        <NeonButton href={SOCIAL_LINKS.whatsapp} icon={<FaWhatsapp/>}>WhatsApp Directo</NeonButton>
-                        <NeonButton href={SOCIAL_LINKS.linkedin} primary={false} icon={<FaLinkedin/>}>LinkedIn</NeonButton>
+                        <NeonButton href={SOCIAL_LINKS.whatsapp} icon={<FaWhatsapp/>}>{t.contact.ctaWhatsapp}</NeonButton>
+                        <NeonButton href={SOCIAL_LINKS.linkedin} primary={false} icon={<FaLinkedin/>}>{t.contact.ctaLinkedin}</NeonButton>
                     </div>
                 </motion.div>
 
@@ -1825,13 +2254,13 @@ function App() {
       </section>
 
       {/* --- FOOTER --- */}
-      <footer className="py-8 border-t border-white/5 bg-[#02010a] text-center relative z-10 text-gray-600 text-sm">
+      <footer className="py-8 border-t border-veil/5 bg-page-alt text-center relative z-10 text-ink-faint text-sm">
           <div className="flex justify-center gap-6 mb-4">
-             <a href={SOCIAL_LINKS.github} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-white transition-colors hover:scale-125 transform"><FaGithub size={24}/></a>
-             <a href={SOCIAL_LINKS.linkedin} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-blue-500 transition-colors hover:scale-125 transform"><FaLinkedin size={24}/></a>
-             <a href={SOCIAL_LINKS.instagram} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-pink-500 transition-colors hover:scale-125 transform"><FaInstagram size={24}/></a>
+             <a href={SOCIAL_LINKS.github} target="_blank" rel="noreferrer" className="text-ink-soft hover:text-ink transition-colors hover:scale-125 transform"><FaGithub size={24}/></a>
+             <a href={SOCIAL_LINKS.linkedin} target="_blank" rel="noreferrer" className="text-ink-soft hover:text-blue-500 transition-colors hover:scale-125 transform"><FaLinkedin size={24}/></a>
+             <a href={SOCIAL_LINKS.instagram} target="_blank" rel="noreferrer" className="text-ink-soft hover:text-pink-500 transition-colors hover:scale-125 transform"><FaInstagram size={24}/></a>
           </div>
-          <p>© 2026 <span className="text-purple-500 font-bold">NeyraDev</span>. Ingeniería de Software de Alto Nivel.</p>
+          <p>© {new Date().getFullYear()} <span className="text-purple-500 font-bold">NeyraDev</span>. {t.footer.rights}</p>
       </footer>
 
     </div>
