@@ -5,13 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node scripts/prerender.mjs",
     "lint": "eslint .",
     "check:locales": "node scripts/check-locales.mjs",
     "preview": "vite preview",
-    "images": "node scripts/optimize-images.mjs"
+    "images": "node scripts/optimize-images.mjs",
+    "test": "vitest run"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "framer-motion": "^12.29.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
@@ -30,7 +32,8 @@
     "postcss": "^8.5.6",
     "sharp": "^0.35.3",
     "tailwindcss": "^3.4.19",
-    "vite": "npm:rolldown-vite@7.2.5"
+    "vite": "npm:rolldown-vite@7.2.5",
+    "vitest": "^4.1.10"
   },
   "overrides": {
     "vite": "npm:rolldown-vite@7.2.5"

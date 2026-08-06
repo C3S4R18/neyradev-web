@@ -1,6 +1,11 @@
 // Galego. Segue exactamente a forma de es.js.
 
 export default {
+  seo: {
+    title: "César Neyra — Enxeñeiro de Software Full Stack",
+    description: "Webs de alto rendemento con Next.js, apps Android nativas en Kotlin e sistemas escalables. Trato directo, sen intermediarios.",
+  },
+
   nav: {
     links: ["Servizos", "Proxectos", "Testemuños", "Plans", "Traxectoria", "Contacto"],
     chat: "Chat",
@@ -382,6 +387,10 @@ export default {
       okBody: "Revisa a xanela nova e preme enviar. Se non se abriu nada, escríbeme directamente:",
       writeTo: "Escribir a",
       again: "Enviar outra mensaxe",
+      sentTitle: "Mensaxe enviada",
+      sentBody: "Grazas. Respóndoche en canto a lea.",
+      errorTitle: "Non se puido enviar",
+      errorBody: "Fallou o envío. Escríbeme directamente:",
       subject: "Nova mensaxe do portafolio: {name}",
       bodyName: "Nome",
       bodyEmail: "Correo",

@@ -1,21 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { DEFAULT_LANG, INITIAL_LANG, LANGUAGES, storeLang } from "./config";
+import { INITIAL_LANG, LANGUAGES, pathForLang, langFromPath, storeLang } from "./config";
 import { I18nContext } from "./context";
+import { loadLocale, peekLocale } from "./loaders";
 
-import es from "./locales/es";
-import eu from "./locales/eu";
-import ca from "./locales/ca";
-import gl from "./locales/gl";
-import en from "./locales/en";
-import fr from "./locales/fr";
-import pt from "./locales/pt";
-import de from "./locales/de";
-import it from "./locales/it";
-
-const LOCALES = { es, eu, ca, gl, en, fr, pt, de, it };
-
-export function I18nProvider({ children }) {
+export function I18nProvider({ initialMessages, children }) {
   const [lang, setLang] = useState(INITIAL_LANG);
+  const [messages, setMessages] = useState(initialMessages);
 
   // Mantiene <html lang> en sincronía: lo usan lectores de pantalla,
   // el corrector ortográfico y los traductores automáticos.
@@ -23,17 +13,36 @@ export function I18nProvider({ children }) {
     document.documentElement.lang = lang;
   }, [lang]);
 
-  const changeLang = useCallback((code) => {
-    if (!LANGUAGES.some((l) => l.code === code)) return;
-    setLang(code);
-    storeLang(code);
+  // Botones atrás/adelante del navegador: la URL manda.
+  useEffect(() => {
+    const onPop = async () => {
+      const code = langFromPath() ?? INITIAL_LANG;
+      setMessages(peekLocale(code) ?? (await loadLocale(code)));
+      setLang(code);
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
   }, []);
 
-  const value = useMemo(
-    () => ({ lang, t: LOCALES[lang] ?? LOCALES[DEFAULT_LANG], changeLang }),
-    [lang, changeLang]
-  );
+  const changeLang = useCallback(async (code) => {
+    if (!LANGUAGES.some((l) => l.code === code)) return;
+
+    // Se cargan los textos ANTES de cambiar el idioma: si se hiciera al revés,
+    // habría un parpadeo con la interfaz a medio traducir.
+    const next = peekLocale(code) ?? (await loadLocale(code));
+    setMessages(next);
+    setLang(code);
+    storeLang(code);
+
+    // pushState en vez de recargar: la dirección queda compartible y el
+    // historial funciona, pero no se vuelve a descargar la página.
+    const path = pathForLang(code);
+    if (window.location.pathname !== path) {
+      window.history.pushState({ lang: code }, "", path + window.location.search + window.location.hash);
+    }
+  }, []);
+
+  const value = useMemo(() => ({ lang, t: messages, changeLang }), [lang, messages, changeLang]);
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
-

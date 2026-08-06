@@ -25,3 +25,7 @@ dist-ssr
 
 # Config local de herramientas de desarrollo
 .claude/
+
+# Variables de entorno locales (.env.example sí se versiona)
+.env
+.env.local

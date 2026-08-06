@@ -1,0 +1,25 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "_comment": "Sin `cleanUrls`: las páginas de idioma son carpetas con index.html, y combinarlo con trailingSlash puede encadenar redirecciones entre /en y /en/.",
+  "trailingSlash": true,
+  "headers": [
+    {
+      "comment": "Los nombres de estos archivos llevan un hash del contenido: si cambia el archivo, cambia el nombre. Se pueden cachear para siempre.",
+      "source": "/assets/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    },
+    {
+      "comment": "Las capturas conservan su nombre entre despliegues, así que se revalidan cada día.",
+      "source": "/img-proyectos/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=604800" }]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" }
+      ]
+    }
+  ]
+}

@@ -1,6 +1,11 @@
 // Français. Reprend exactement la structure de es.js.
 
 export default {
+  seo: {
+    title: "César Neyra — Ingénieur logiciel Full Stack",
+    description: "Sites web haute performance avec Next.js, applications Android natives en Kotlin et systèmes évolutifs. Contact direct, sans intermédiaire.",
+  },
+
   nav: {
     links: ["Services", "Projets", "Témoignages", "Tarifs", "Parcours", "Contact"],
     chat: "Chat",
@@ -382,6 +387,10 @@ export default {
       okBody: "Vérifiez la nouvelle fenêtre et appuyez sur envoyer. Si rien ne s'est ouvert, écrivez-moi directement :",
       writeTo: "Écrire à",
       again: "Envoyer un autre message",
+      sentTitle: "Message envoyé",
+      sentBody: "Merci. Je réponds dès que je le lis.",
+      errorTitle: "Envoi impossible",
+      errorBody: "L'envoi a échoué. Écrivez-moi directement :",
       subject: "Nouveau message du portfolio : {name}",
       bodyName: "Nom",
       bodyEmail: "E-mail",

@@ -5,6 +5,11 @@
 // batez ere marketin-esaldiak (hero, planak, testigantzak).
 
 export default {
+  seo: {
+    title: "César Neyra — Software ingeniari Full Stack",
+    description: "Errendimendu handiko webguneak Next.js-ekin, Android aplikazio natiboak Kotlin-ekin eta sistema eskalagarriak. Harreman zuzena, bitartekaririk gabe.",
+  },
+
   nav: {
     links: ["Zerbitzuak", "Proiektuak", "Iritziak", "Planak", "Ibilbidea", "Kontaktua"],
     chat: "Txata",
@@ -386,6 +391,10 @@ export default {
       okBody: "Begiratu leiho berrian eta sakatu bidali. Ezer ireki ez bada, idatzi zuzenean:",
       writeTo: "Idatzi hona:",
       again: "Beste mezu bat bidali",
+      sentTitle: "Mezua bidalita",
+      sentBody: "Eskerrik asko. Irakurri bezain laster erantzungo dizut.",
+      errorTitle: "Ezin izan da bidali",
+      errorBody: "Bidalketak huts egin du. Idatzi zuzenean:",
       subject: "Portfolioko mezu berria: {name}",
       bodyName: "Izena",
       bodyEmail: "Helbide elektronikoa",

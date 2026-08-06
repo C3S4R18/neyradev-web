@@ -1,6 +1,11 @@
 // Català. Segueix exactament la forma d'es.js.
 
 export default {
+  seo: {
+    title: "César Neyra — Enginyer de Programari Full Stack",
+    description: "Webs d'alt rendiment amb Next.js, apps Android natives en Kotlin i sistemes escalables. Tracte directe, sense intermediaris.",
+  },
+
   nav: {
     links: ["Serveis", "Projectes", "Testimonis", "Plans", "Trajectòria", "Contacte"],
     chat: "Xat",
@@ -382,6 +387,10 @@ export default {
       okBody: "Revisa la finestra nova i prem enviar. Si no s'ha obert res, escriu-me directament:",
       writeTo: "Escriure a",
       again: "Enviar un altre missatge",
+      sentTitle: "Missatge enviat",
+      sentBody: "Gràcies. Et responc així que el llegeixi.",
+      errorTitle: "No s'ha pogut enviar",
+      errorBody: "L'enviament ha fallat. Escriu-me directament:",
       subject: "Nou missatge del portafolis: {name}",
       bodyName: "Nom",
       bodyEmail: "Correu",

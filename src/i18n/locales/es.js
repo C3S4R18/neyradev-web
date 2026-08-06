@@ -7,6 +7,11 @@
 // de proyectos, nombres de tecnologías, precios, colores, iconos e imágenes.
 
 export default {
+  seo: {
+    title: "César Neyra — Ingeniero de Software Full Stack",
+    description: "Desarrollo webs de alto rendimiento con Next.js, apps Android nativas en Kotlin y sistemas escalables. Trato directo, sin intermediarios.",
+  },
+
   nav: {
     links: ["Servicios", "Proyectos", "Testimonios", "Planes", "Trayectoria", "Contacto"],
     chat: "Chat",
@@ -392,6 +397,10 @@ export default {
       okBody: "Revisa la ventana nueva y pulsa enviar. Si no se abrió nada, escríbeme directamente:",
       writeTo: "Escribir a",
       again: "Enviar otro mensaje",
+      sentTitle: "Mensaje enviado",
+      sentBody: "Gracias. Te respondo en cuanto lo lea.",
+      errorTitle: "No se pudo enviar",
+      errorBody: "Ha fallado el envío. Escríbeme directamente:",
       subject: "Nuevo Mensaje de Portafolio: {name}",
       bodyName: "Nombre",
       bodyEmail: "Email",

@@ -63,6 +63,24 @@ export function detectLang() {
   return DEFAULT_LANG;
 }
 
+// --- URL POR IDIOMA ---
+//
+// Cada idioma tiene su propia dirección: "/" en castellano y "/en/", "/fr/"…
+// para el resto. Sin esto Google solo indexaba una versión, porque el idioma se
+// decidía en JavaScript y el buscador nunca veía las otras ocho traducciones.
+//
+// El castellano va sin prefijo para no romper los enlaces que ya existen.
+export const SITE_URL = "https://neyradev-web.vercel.app";
+
+export const pathForLang = (code) => (code === DEFAULT_LANG ? "/" : `/${code}/`);
+export const urlForLang = (code) => `${SITE_URL}${pathForLang(code)}`;
+
+/** Idioma que indica la ruta actual, o null si la ruta no lleva prefijo. */
+export function langFromPath(pathname = typeof location !== "undefined" ? location.pathname : "/") {
+  const first = pathname.split("/").filter(Boolean)[0];
+  return first && isSupported(first) ? first : null;
+}
+
 // Se resuelve una sola vez al cargar el módulo, fuera de React: leer
 // localStorage o navigator durante el render es impuro.
 // El idioma que sugiere el navegador, al margen de lo que haya elegido el
@@ -70,6 +88,12 @@ export function detectLang() {
 // la etiqueta saltaba a cualquier opción que se pulsara, lo cual era falso.
 export const DETECTED_LANG = detectLang();
 
+export const URL_LANG = langFromPath();
 export const STORED_LANG = readStoredLang();
-export const INITIAL_LANG = STORED_LANG ?? detectLang();
-export const HAS_CHOSEN_LANG = STORED_LANG !== null;
+
+// La URL manda sobre todo lo demás: si alguien comparte "/fr/", quien lo abra
+// debe ver francés aunque tenga otro idioma guardado.
+export const INITIAL_LANG = URL_LANG ?? STORED_LANG ?? DETECTED_LANG;
+
+// Entrar por una URL con idioma ya es una elección: no preguntamos.
+export const HAS_CHOSEN_LANG = URL_LANG !== null || STORED_LANG !== null;

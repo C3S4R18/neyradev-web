@@ -5,6 +5,11 @@ import { SiTailwindcss, SiKotlin, SiMysql, SiSupabase, SiPhp, SiVercel, SiNextdo
 import { useI18n } from './i18n/context';
 import { DETECTED_LANG, HAS_CHOSEN_LANG, LANGUAGES } from './i18n/config';
 import Flag from './i18n/Flag';
+import { SOCIAL_LINKS, CONTACT_EMAIL } from './data/social';
+
+// Endpoint del formulario (Formspree, Web3Forms, Resend...). Sin esta variable
+// el formulario abre el correo del visitante, que es lo que hacía antes.
+const CONTACT_ENDPOINT = import.meta.env.VITE_CONTACT_ENDPOINT;
 import { useTheme } from './theme/context';
 import { useCurrency } from './currency/context';
 import { CURRENCIES, formatPrice } from './currency/config';
@@ -14,12 +19,7 @@ const fill = (template, values) =>
   Object.entries(values).reduce((acc, [key, value]) => acc.replaceAll(`{${key}}`, value), template);
 
 // --- DATOS ---
-const SOCIAL_LINKS = {
-  github: "https://github.com/NeyraDev", 
-  linkedin: "https://www.linkedin.com/in/cesarneyra/",
-  instagram: "https://www.instagram.com/neyradev/",
-  whatsapp: "https://wa.me/51947327420"
-};
+
 
 // --- DATOS NO TRADUCIBLES ---
 // Iconos, colores, imágenes, precios y nombres de tecnología viven aquí.
@@ -661,6 +661,7 @@ const GalleryModal = ({ images, onClose }) => {
               key={index}
               src={images[index]}
               initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
+              decoding="async"
               className="max-w-full max-h-full object-contain shadow-2xl"
               alt={`${t.projects.modal.galleryAlt} ${index + 1}/${images.length}`}
             />
@@ -823,15 +824,14 @@ const ProjectModal = ({ project, onClose }) => {
 };
 
 // --- NUEVO FORMULARIO DE CONTACTO (CORREGIDO INPUTS & GMAIL) ---
-const CONTACT_EMAIL = "neyrajcf@gmail.com";
-
 const ContactForm = () => {
   const { t } = useI18n();
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [sent, setSent] = useState(false);
+  // idle -> sending -> (sent | mail | error)
+  const [status, setStatus] = useState('idle');
   const [focusedField, setFocusedField] = useState(null);
   const timers = useRef([]);
+  const isSubmitting = status === 'sending';
 
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
@@ -839,12 +839,31 @@ const ContactForm = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
+    setStatus('sending');
 
     const f = t.contact.form;
     const subject = fill(f.subject, { name: formData.name });
+
+    // Con endpoint configurado el mensaje llega de verdad al buzón. Sin él,
+    // seguimos abriendo el correo del visitante: es lo único posible sin
+    // servidor, pero depende de que esa persona pulse enviar.
+    if (CONTACT_ENDPOINT) {
+      try {
+        const res = await fetch(CONTACT_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ ...formData, subject, _subject: subject }),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        setStatus('sent');
+      } catch {
+        setStatus('error');
+      }
+      return;
+    }
+
     const body = `${f.bodyName}: ${formData.name}\n${f.bodyEmail}: ${formData.email}\n\n${f.bodyMessage}:\n${formData.message}`;
     const query = `su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${CONTACT_EMAIL}&${query}`;
@@ -856,16 +875,14 @@ const ContactForm = () => {
       // del sistema, que no depende de tener sesión en Gmail.
       const win = window.open(gmailUrl, "_blank", "noopener,noreferrer");
       if (!win) window.location.href = mailtoUrl;
-
-      setIsSubmitting(false);
-      setSent(true);
+      setStatus('mail');
     }, 600);
 
     timers.current.push(timer);
   };
 
   const reset = () => {
-    setSent(false);
+    setStatus('idle');
     setFormData({ name: '', email: '', message: '' });
   };
 
@@ -873,7 +890,9 @@ const ContactForm = () => {
   const labelClasses = "absolute left-0 top-1 text-xs text-purple-400 transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-ink-faint peer-placeholder-shown:top-6 peer-focus:top-1 peer-focus:text-xs peer-focus:text-purple-400 flex items-center gap-2 pointer-events-none z-0";
   const containerClasses = (field) => `relative border-b border-veil/20 pt-6 pb-2 focus-within:border-purple-500 transition-all overflow-hidden group ${focusedField === field ? 'shadow-[0_4px_20px_-5px_rgba(168,85,247,0.5)]' : ''}`;
 
-  if (sent) return <ContactSent onReset={reset} />;
+  if (status === 'sent' || status === 'mail' || status === 'error') {
+    return <ContactSent status={status} onReset={reset} />;
+  }
 
   return (
     <motion.form
@@ -941,24 +960,38 @@ const ContactForm = () => {
 
 // Nunca afirmamos "mensaje enviado": lo único que sabemos es que hemos abierto
 // el cliente de correo. Quien envía es el visitante.
-const ContactSent = ({ onReset }) => {
+// Tres desenlaces distintos, y cada uno dice la verdad: "enviado" solo cuando
+// el servidor lo confirmó, "hemos abierto tu correo" cuando depende del
+// visitante, y el error cuando falló.
+const ContactSent = ({ status, onReset }) => {
   const { t } = useI18n();
   const f = t.contact.form;
+  const failed = status === 'error';
+
+  const heading = failed ? f.errorTitle : status === 'sent' ? f.sentTitle : f.okTitle;
+  const body = failed ? f.errorBody : status === 'sent' ? f.sentBody : f.okBody;
 
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.96 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="bg-surface/80 backdrop-blur-2xl p-8 md:p-10 rounded-[2rem] border border-green-500/30 w-full shadow-[0_0_40px_rgba(34,197,94,0.15)] relative overflow-hidden text-center"
+      role={failed ? 'alert' : 'status'}
+      className={`bg-surface/80 backdrop-blur-2xl p-8 md:p-10 rounded-[2rem] border w-full relative overflow-hidden text-center ${
+        failed
+          ? 'border-red-500/40 shadow-[0_0_40px_rgba(239,68,68,0.15)]'
+          : 'border-green-500/30 shadow-[0_0_40px_rgba(34,197,94,0.15)]'
+      }`}
     >
-      <div className="absolute -top-20 -right-20 w-40 h-40 bg-green-500/20 rounded-full blur-[80px] pointer-events-none"></div>
+      <div className={`absolute -top-20 -right-20 w-40 h-40 rounded-full blur-[80px] pointer-events-none ${failed ? 'bg-red-500/20' : 'bg-green-500/20'}`}></div>
 
       <div className="relative z-10 flex flex-col items-center gap-4">
-        <div className="w-16 h-16 rounded-full bg-green-500/15 border border-green-500/30 flex items-center justify-center">
-          <FaCheckCircle className="text-3xl text-green-400" />
+        <div className={`w-16 h-16 rounded-full border flex items-center justify-center ${
+          failed ? 'bg-red-500/15 border-red-500/30' : 'bg-green-500/15 border-green-500/30'
+        }`}>
+          {failed ? <FaTimes className="text-3xl text-red-400" /> : <FaCheckCircle className="text-3xl text-green-400" />}
         </div>
-        <h3 className="text-2xl font-bold text-ink">{f.okTitle}</h3>
-        <p className="text-ink-soft text-sm leading-relaxed max-w-sm">{f.okBody}</p>
+        <h3 className="text-2xl font-bold text-ink">{heading}</h3>
+        <p className="text-ink-soft text-sm leading-relaxed max-w-sm">{body}</p>
 
         <a
           href={`mailto:${CONTACT_EMAIL}`}
@@ -1202,7 +1235,7 @@ const SmartAssistant = () => {
             {/* Cabecera */}
             <div className="flex items-center gap-3 p-4 border-b border-veil/10">
               <div className="relative flex-shrink-0">
-                <img src="/mi-foto.png" alt="César Neyra" className="w-11 h-11 rounded-full object-cover ring-2 ring-purple-500/40" />
+                <img src="/mi-foto.png" alt="César Neyra" width="44" height="44" loading="lazy" decoding="async" className="w-11 h-11 rounded-full object-cover ring-2 ring-purple-500/40" />
                 <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-surface rounded-full"></span>
               </div>
               <div className="min-w-0 flex-grow">
@@ -1755,7 +1788,7 @@ const MobileMenu = ({ open, onClose, onNavigate }) => {
           <div className="relative z-10 flex items-center justify-between px-6 py-4 border-b border-veil/10">
             <div className="flex items-center gap-2 font-bold text-lg">
               <div className="w-9 h-9 rounded-xl overflow-hidden border-2 border-purple-500/50">
-                <img src="/mi-foto.png" alt="Cesar Neyra" className="w-full h-full object-cover" />
+                <img src="/mi-foto.png" alt="César Neyra" width="36" height="36" decoding="async" className="w-full h-full object-cover" />
               </div>
               <span>NeyraDev</span>
             </div>
@@ -1901,7 +1934,7 @@ function App() {
           onClick={() => scrollToSection('hero')}
         >
           <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg group-hover:rotate-12 transition-transform border-2 border-purple-500/50">
-             <img src="/mi-foto.png" alt="Cesar Neyra" className="w-full h-full object-cover"/>
+             <img src="/mi-foto.png" alt="César Neyra" width="40" height="40" decoding="async" className="w-full h-full object-cover"/>
           </div>
           <span className="tracking-tight group-hover:text-purple-400 transition-colors">NeyraDev</span>
         </motion.div>
@@ -1957,10 +1990,13 @@ function App() {
         >
            <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 blur-2xl opacity-50 rounded-full"></div>
            <div className="relative z-10 p-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full">
-               <img 
-                src="/mi-foto.png" 
+               <img
+                src="/mi-foto.png"
+                alt="César Neyra"
+                width="160"
+                height="160"
+                fetchPriority="high"
                 className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-page shadow-2xl object-cover"
-                alt="Cesar Neyra"
                />
            </div>
            <motion.div 
@@ -2133,10 +2169,18 @@ function App() {
                        className={`h-56 bg-gradient-to-br ${project.gradient} flex items-center justify-center relative overflow-hidden rounded-t-2xl -mx-6 -mt-6 mb-6 group-hover:h-60 transition-all duration-500`}
                      >
                         {project.gallery.length > 0 && (
-                          <div
-                            className="absolute inset-0 bg-cover bg-center opacity-40 hover:scale-110 transition-transform duration-700"
-                            style={{ backgroundImage: `url(${project.gallery[0]})` }}
-                          ></div>
+                          // <img> en vez de background-image: así el navegador
+                          // puede aplazar la descarga con loading="lazy". Con
+                          // CSS no hay forma de decírselo.
+                          <img
+                            src={project.gallery[0]}
+                            alt=""
+                            loading="lazy"
+                            decoding="async"
+                            width="640"
+                            height="360"
+                            className="absolute inset-0 w-full h-full object-cover opacity-40 hover:scale-110 transition-transform duration-700"
+                          />
                         )}
                         <div className="absolute inset-0 bg-black/20 group-hover:bg-black/50 transition-colors z-0"></div> 
                         

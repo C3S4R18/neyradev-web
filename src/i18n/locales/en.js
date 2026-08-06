@@ -1,6 +1,11 @@
 // English. Mirrors the shape of es.js exactly.
 
 export default {
+  seo: {
+    title: "César Neyra — Full Stack Software Engineer",
+    description: "High-performance websites with Next.js, native Android apps in Kotlin and scalable systems. Work directly with me, no middlemen.",
+  },
+
   nav: {
     links: ["Services", "Projects", "Testimonials", "Pricing", "Career", "Contact"],
     chat: "Chat",
@@ -382,6 +387,10 @@ export default {
       okBody: "Check the new window and hit send. If nothing opened, write to me directly:",
       writeTo: "Write to",
       again: "Send another message",
+      sentTitle: "Message sent",
+      sentBody: "Thanks. I'll reply as soon as I read it.",
+      errorTitle: "Couldn't send it",
+      errorBody: "The send failed. Write to me directly:",
       subject: "New Portfolio Message: {name}",
       bodyName: "Name",
       bodyEmail: "Email",
