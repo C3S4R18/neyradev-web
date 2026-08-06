@@ -67,19 +67,42 @@ for (const file of readdirSync(DIR).filter((f) => /\.(png|jpe?g)$/i.test(f))) {
   }
 }
 
-// La foto de perfil sigue siendo PNG: es el favicon y la usa index.html.
-const photoBefore = statSync("public/mi-foto.png").size;
-const photo = await sharp("public/mi-foto.png")
-  .resize(512, 512, { fit: "cover" })
-  .png({ compressionLevel: 9, quality: 85, effort: 8 })
-  .toBuffer();
-if (!DRY) writeFileSync("public/mi-foto.png", photo);
+// --- FOTO DE PERFIL ---
+//
+// El original vive en assets-src/ (fuera de public/, así no se despliega) y de
+// ahí salen todas las versiones. Si el script leyera y escribiera el mismo
+// archivo, cada ejecución recortaría sobre lo ya recortado.
+//
+// Recorte cuadrado pensado para un retrato vertical tipo carnet: el lado mide
+// el 84% del ancho y arranca al 5% de la altura. Así la cara queda centrada en
+// el círculo con margen sobre el pelo. Un `fit: "cover"` a secas recorta por el
+// centro geométrico, que en un retrato vertical cae en el pecho y decapita.
+const PHOTO_SRC = "assets-src/mi-foto.png";
+const photoBefore = statSync(PHOTO_SRC).size;
+
+const meta = await sharp(PHOTO_SRC).metadata();
+const side = Math.min(Math.round(meta.width * 0.84), meta.width, meta.height);
+const cuadrado = sharp(PHOTO_SRC).extract({
+  left: Math.round((meta.width - side) / 2),
+  top: Math.min(Math.round(meta.height * 0.05), meta.height - side),
+  width: side,
+  height: side,
+});
+
+// La web usa WebP (18 kB frente a 86 kB en PNG para la misma foto).
+const photoWebp = await cuadrado.clone().resize(512, 512).webp({ quality: 85 }).toBuffer();
+if (!DRY) writeFileSync("public/mi-foto.webp", photoWebp);
+
+// El favicon se queda en PNG por compatibilidad, y a 128 px basta.
+const favicon = await cuadrado.clone().resize(128, 128).png({ compressionLevel: 9, palette: true, quality: 85, effort: 9 }).toBuffer();
+if (!DRY) writeFileSync("public/mi-foto.png", favicon);
+
 before += photoBefore;
-after += photo.length;
-rows.push({ file: "mi-foto.png", before: photoBefore, after: photo.length });
+after += photoWebp.length + favicon.length;
+rows.push({ file: "mi-foto (webp+favicon)", before: photoBefore, after: photoWebp.length + favicon.length });
 
 // Imagen para redes sociales: Open Graph pide 1200x630, no una foto cuadrada.
-const avatar = await sharp(photo).resize(260, 260, { fit: "cover" }).png().toBuffer();
+const avatar = await cuadrado.clone().resize(260, 260).png().toBuffer();
 const card = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">

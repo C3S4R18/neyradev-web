@@ -357,7 +357,7 @@ const SplashScreen = ({ onComplete }) => {
             </defs>
           </svg>
           <img
-            src="/mi-foto.png"
+            src="/mi-foto.webp"
             alt=""
             className="absolute inset-[10px] w-[calc(100%-20px)] h-[calc(100%-20px)] rounded-full object-cover"
           />
@@ -1235,7 +1235,7 @@ const SmartAssistant = () => {
             {/* Cabecera */}
             <div className="flex items-center gap-3 p-4 border-b border-veil/10">
               <div className="relative flex-shrink-0">
-                <img src="/mi-foto.png" alt="César Neyra" width="44" height="44" loading="lazy" decoding="async" className="w-11 h-11 rounded-full object-cover ring-2 ring-purple-500/40" />
+                <img src="/mi-foto.webp" alt="César Neyra" width="44" height="44" loading="lazy" decoding="async" className="w-11 h-11 rounded-full object-cover ring-2 ring-purple-500/40" />
                 <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-surface rounded-full"></span>
               </div>
               <div className="min-w-0 flex-grow">
@@ -1788,7 +1788,7 @@ const MobileMenu = ({ open, onClose, onNavigate }) => {
           <div className="relative z-10 flex items-center justify-between px-6 py-4 border-b border-veil/10">
             <div className="flex items-center gap-2 font-bold text-lg">
               <div className="w-9 h-9 rounded-xl overflow-hidden border-2 border-purple-500/50">
-                <img src="/mi-foto.png" alt="César Neyra" width="36" height="36" decoding="async" className="w-full h-full object-cover" />
+                <img src="/mi-foto.webp" alt="César Neyra" width="36" height="36" decoding="async" className="w-full h-full object-cover" />
               </div>
               <span>NeyraDev</span>
             </div>
@@ -1934,7 +1934,7 @@ function App() {
           onClick={() => scrollToSection('hero')}
         >
           <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg group-hover:rotate-12 transition-transform border-2 border-purple-500/50">
-             <img src="/mi-foto.png" alt="César Neyra" width="40" height="40" decoding="async" className="w-full h-full object-cover"/>
+             <img src="/mi-foto.webp" alt="César Neyra" width="40" height="40" decoding="async" className="w-full h-full object-cover"/>
           </div>
           <span className="tracking-tight group-hover:text-purple-400 transition-colors">NeyraDev</span>
         </motion.div>
@@ -1983,15 +1983,19 @@ function App() {
         <div className="absolute bottom-1/4 -left-20 w-72 h-72 bg-pink-600/30 rounded-full blur-[100px] animate-pulse delay-1000"></div>
 
         <motion.div 
-            initial={{ scale: 0, rotate: -180 }} 
-            animate={{ scale: 1, rotate: 0 }} 
-            transition={{ type: "spring", duration: 1.5, bounce: 0.5 }} 
+            // Antes arrancaba en scale 0 con giro de 180°: si la animación no
+            // llegaba a ejecutarse, la foto quedaba invisible. Es lo primero
+            // que se ve de la página, así que ahora el estado inicial ya es
+            // legible y la animación solo la remata.
+            initial={{ scale: 0.92 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", duration: 1.1, bounce: 0.35 }}
             className="mb-8 relative"
         >
            <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 blur-2xl opacity-50 rounded-full"></div>
            <div className="relative z-10 p-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full">
                <img
-                src="/mi-foto.png"
+                src="/mi-foto.webp"
                 alt="César Neyra"
                 width="160"
                 height="160"
