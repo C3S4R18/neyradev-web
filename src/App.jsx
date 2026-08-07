@@ -108,11 +108,17 @@ const PROJECTS_META = [
     badge: "current",
     link: "https://ruag-app-web.vercel.app/",
     gallery: [
-      "/img-proyectos/ruag-logo.webp",
+      "/img-proyectos/Ruag-System-Banner.png",
       "/img-proyectos/ruag-login.webp",
       "/img-proyectos/ruag-dashboard.webp",
-      "/img-proyectos/ruag-movil1.webp",
-      "/img-proyectos/ruag-movil2.webp",
+      "/img-proyectos/ruag-movil1.jpeg",
+      "/img-proyectos/ruag-movil2.jpeg",
+      "/img-proyectos/ruag-movil3.jpeg",
+      "/img-proyectos/ruag-movil4.jpeg",
+      "/img-proyectos/ruag-movil5.jpeg",
+      "/img-proyectos/ruag-movil6.jpeg",
+      "/img-proyectos/ruag-movil7.jpeg",
+      "/img-proyectos/ruag-movil8.jpeg",
     ],
     stack: ["Next.js 14 (App Router)", "TypeScript", "Vercel Edge Functions", "SWR"],
     techStackIcons: [<SiNextdotjs key="next" />, <SiTypescript key="ts" />, <SiVercel key="vercel" />, <SiTailwindcss key="tw" />],
@@ -222,7 +228,16 @@ const PROJECTS_META = [
     category: "fullstack",
     badge: "corporate",
     link: "#",
-    gallery: [], // TODO (César): /img-proyectos/jornada-*.png
+    gallery: [
+      "/img-proyectos/Ruag-Jornada-Banner.png",
+      "/img-proyectos/Ruag-Jornada-App1.jpeg",
+      "/img-proyectos/Ruag-Jornada-App2.jpeg",
+      "/img-proyectos/Ruag-Jornada-App3.jpeg",
+      "/img-proyectos/Ruag-Jornada-App4.jpeg",
+      "/img-proyectos/Ruag-Jornada-App5.jpeg",
+      "/img-proyectos/Ruag-Jornada-App6.jpeg",
+      "/img-proyectos/Ruag-Jornada-App7.jpeg",
+    ], // TODO (César): /img-proyectos/jornada-*.png
     stack: ["Next.js", "TypeScript", "Supabase", "PostgreSQL"],
     techStackIcons: [<SiNextdotjs key="next" />, <SiTypescript key="ts" />, <SiSupabase key="supa" />, <SiPostgresql key="pg" />],
     gradient: "from-sky-900 to-blue-900",
@@ -236,7 +251,12 @@ const PROJECTS_META = [
     link: "#",
     gallery: [
       "/img-proyectos/Banner-SsomaFiles.webp",
-    ], // TODO (César): /img-proyectos/ssoma-*.png
+      "/img-proyectos/SsomaFiles-Web-Pwa.png",
+      "/img-proyectos/SsomaFiles-1.jpeg",
+      "/img-proyectos/SsomaFiles-2.jpeg",
+      "/img-proyectos/SsomaFiles-3.jpeg",
+      "/img-proyectos/SsomaFiles-4.jpeg",
+    ], // /img-proyectos/ssoma-*.png
     stack: ["Next.js", "TypeScript", "Supabase Storage", "Tailwind CSS"],
     techStackIcons: [<SiNextdotjs key="next" />, <SiTypescript key="ts" />, <SiSupabase key="supa" />, <SiTailwindcss key="tw" />],
     gradient: "from-emerald-900 to-teal-900",
