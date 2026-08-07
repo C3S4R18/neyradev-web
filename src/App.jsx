@@ -262,19 +262,6 @@ const PROJECTS_META = [
     gradient: "from-emerald-900 to-teal-900",
     icon: <FaLayerGroup className="text-6xl text-white relative z-10 drop-shadow-lg" />,
   },
-  {
-    key: "cubo",
-    title: "El Cubo",
-    ruag: true, // parte del ecosistema Ruag
-    category: "fullstack",
-    badge: "wip",
-    link: "#",
-    gallery: [], // TODO (César): /img-proyectos/cubo-*.png
-    stack: ["Next.js", "TypeScript", "Supabase"],
-    techStackIcons: [<SiNextdotjs key="next" />, <SiTypescript key="ts" />, <SiSupabase key="supa" />],
-    gradient: "from-fuchsia-900 to-purple-900",
-    icon: <FaBoxOpen className="text-6xl text-white relative z-10 drop-shadow-lg" />,
-  },
 ];
 
 // Las reseñas de abajo son TEXTO DE MUESTRA, no opiniones reales: llevan nombre,

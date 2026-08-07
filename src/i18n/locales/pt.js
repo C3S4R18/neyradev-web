@@ -184,15 +184,6 @@ export default {
         challenges: "Tratamento seguro de ficheiros e permissões por perfil dentro da organização.",
         highlight: "Pesquisa e organização de toda a documentação num só lugar.",
       },
-      cubo: {
-        subtitle: "Projeto em Desenvolvimento",
-        problem: "Projeto em fase inicial: o enunciado do problema será publicado quando o âmbito estiver fechado.",
-        solution: "Projeto atualmente em construção. Mais detalhes em breve.",
-        impact: "Resultados a medir após a primeira entrega.",
-        architecture: "Arquitetura em definição.",
-        challenges: "Desafios técnicos a documentar à medida que o desenvolvimento avança.",
-        highlight: "Projeto em desenvolvimento ativo.",
-      },
     },
   },
 

@@ -184,15 +184,6 @@ export default {
         challenges: "Manexo seguro de arquivos e permisos por rol dentro da organización.",
         highlight: "Busca e organización de toda a documentación nun só lugar.",
       },
-      cubo: {
-        subtitle: "Proxecto en Desenvolvemento",
-        problem: "Proxecto en fase inicial: o formulamento do problema publicarase ao pechar o alcance.",
-        solution: "Proxecto actualmente en construción. Proximamente máis detalles.",
-        impact: "Resultados pendentes de medir tras a primeira entrega.",
-        architecture: "Arquitectura en definición.",
-        challenges: "Retos técnicos por documentar conforme avance o desenvolvemento.",
-        highlight: "Proxecto en desenvolvemento activo.",
-      },
     },
   },
 

@@ -184,15 +184,6 @@ export default {
         challenges: "Gestió segura d'arxius i permisos per rol dins de l'organització.",
         highlight: "Cerca i organització de tota la documentació en un sol lloc.",
       },
-      cubo: {
-        subtitle: "Projecte en Desenvolupament",
-        problem: "Projecte en fase inicial: el plantejament del problema es publicarà quan es tanqui l'abast.",
-        solution: "Projecte actualment en construcció. Aviat més detalls.",
-        impact: "Resultats pendents de mesurar després del primer lliurament.",
-        architecture: "Arquitectura en definició.",
-        challenges: "Reptes tècnics per documentar a mesura que avanci el desenvolupament.",
-        highlight: "Projecte en desenvolupament actiu.",
-      },
     },
   },
 

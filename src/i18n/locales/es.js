@@ -190,17 +190,6 @@ export default {
         challenges: "Manejo seguro de archivos y permisos por rol dentro de la organización.",
         highlight: "Búsqueda y organización de documentos SSOMA en un solo lugar.",
       },
-      // TODO (César): este proyecto sigue con textos de relleno. Rellénalo o
-      // quítalo de PROJECTS_META en App.jsx antes de publicar.
-      cubo: {
-        subtitle: "Proyecto en Desarrollo",
-        problem: "Proyecto en fase inicial: el planteamiento del problema se publicará al cerrar el alcance.",
-        solution: "Proyecto actualmente en construcción. Próximamente más detalles.",
-        impact: "Resultados pendientes de medir tras la primera entrega.",
-        architecture: "Arquitectura en definición.",
-        challenges: "Retos técnicos por documentar conforme avance el desarrollo.",
-        highlight: "Proyecto en desarrollo activo.",
-      },
     },
   },
 

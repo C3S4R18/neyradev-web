@@ -188,15 +188,6 @@ export default {
         challenges: "Fitxategien kudeaketa segurua eta erakundeko rol bakoitzaren baimenak.",
         highlight: "Dokumentazio guztiaren bilaketa eta antolaketa leku bakarrean.",
       },
-      cubo: {
-        subtitle: "Garapenean dagoen proiektua",
-        problem: "Hasierako faseko proiektua: arazoaren planteamendua irismena itxi ondoren argitaratuko da.",
-        solution: "Proiektua eraikitzen ari da. Laster xehetasun gehiago.",
-        impact: "Emaitzak lehen entregaren ondoren neurtuko dira.",
-        architecture: "Arkitektura zehazteke.",
-        challenges: "Erronka teknikoak garapenak aurrera egin ahala dokumentatuko dira.",
-        highlight: "Garapen aktiboan dagoen proiektua.",
-      },
     },
   },
 

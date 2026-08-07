@@ -184,15 +184,6 @@ export default {
         challenges: "Sichere Dateiverwaltung und rollenbasierte Berechtigungen im Unternehmen.",
         highlight: "Suche und Ordnung der gesamten Dokumentation an einem Ort.",
       },
-      cubo: {
-        subtitle: "Projekt in Entwicklung",
-        problem: "Projekt in der Frühphase: Die Problemstellung wird veröffentlicht, sobald der Umfang feststeht.",
-        solution: "Projekt derzeit im Aufbau. Weitere Details folgen in Kürze.",
-        impact: "Ergebnisse werden nach der ersten Lieferung gemessen.",
-        architecture: "Architektur wird noch festgelegt.",
-        challenges: "Technische Herausforderungen werden im Verlauf der Entwicklung dokumentiert.",
-        highlight: "Projekt in aktiver Entwicklung.",
-      },
     },
   },
 

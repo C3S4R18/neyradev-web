@@ -184,15 +184,6 @@ export default {
         challenges: "Gestione sicura dei file e permessi per ruolo all'interno dell'organizzazione.",
         highlight: "Ricerca e organizzazione di tutta la documentazione in un unico posto.",
       },
-      cubo: {
-        subtitle: "Progetto in sviluppo",
-        problem: "Progetto in fase iniziale: la definizione del problema sarà pubblicata alla chiusura del perimetro.",
-        solution: "Progetto attualmente in costruzione. Presto maggiori dettagli.",
-        impact: "Risultati da misurare dopo la prima consegna.",
-        architecture: "Architettura in fase di definizione.",
-        challenges: "Sfide tecniche da documentare con l'avanzare dello sviluppo.",
-        highlight: "Progetto in sviluppo attivo.",
-      },
     },
   },
 

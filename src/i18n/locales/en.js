@@ -184,15 +184,6 @@ export default {
         challenges: "Secure file handling and role-based permissions across the organisation.",
         highlight: "Search and organise every HSE document in one place.",
       },
-      cubo: {
-        subtitle: "Project in Development",
-        problem: "Early-stage project: the problem statement will be published once the scope is closed.",
-        solution: "Currently under construction. More details soon.",
-        impact: "Results to be measured after the first delivery.",
-        architecture: "Architecture being defined.",
-        challenges: "Technical challenges to be documented as development progresses.",
-        highlight: "Project under active development.",
-      },
     },
   },
 

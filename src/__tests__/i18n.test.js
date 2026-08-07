@@ -5,7 +5,7 @@ import { loadLocale } from "../i18n/loaders";
 // Las claves que App.jsx usa para enlazar cada bloque de datos con sus textos.
 // Si alguien renombra una clave en un sitio y no en el otro, la interfaz pinta
 // "undefined" y no se nota hasta que un visitante lo ve.
-const PROJECT_KEYS = ["ruag", "jormard", "aldia", "esaf", "cinnamo", "led", "spin", "jornada", "ssoma", "cubo"];
+const PROJECT_KEYS = ["ruag", "jormard", "aldia", "esaf", "cinnamo", "led", "spin", "jornada", "ssoma"];
 const PLAN_KEYS = ["web", "app", "fullstack"];
 const TIER_KEYS = ["webInfo", "webDyn", "webShop", "appBasic", "appInter", "appComplex", "fsStart", "fsPro", "fsEnterprise"];
 const SERVICE_KEYS = ["backend", "mobile", "web"];
